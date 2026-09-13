@@ -1,1 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KisanSetu - Farmer Procurement</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        <div class="logo">🌾</div>
+
+        <div>
+            <h2>KisanSetu</h2>
+            <span>Farmer Procurement Portal</span>
+        </div>
+    </div>
+
+    <div class="status">
+        🟢 System Online
+    </div>
+
+</header>
+
+
+<nav class="navbar">
+
+    <button onclick="showSection('booking')">
+        1. Slot Booking
+    </button>
+
+    <button onclick="showSection('status')">
+        2. Live Status
+    </button>
+
+    <button onclick="showSection('dashboard')">
+        3. Mandi Dashboard
+    </button>
+
+    <button onclick="showSection('calculator')">
+        4. MSP Calculator
+    </button>
+
+</nav>
+
+
+<main>
+
+
+<!-- ================= BOOKING ================= -->
+
+<section id="booking" class="section active">
+
+<div class="card">
+
+    <div class="section-title">
+
+        <div>
+            <h1>Procurement Mandi Slot Booking</h1>
+
+            <p>
+                Apni khet ki fasal sell karne ke liye live slot book karein
+                aur digital token prapt karein.
+            </p>
+        </div>
+
+        <button class="voice-btn">
+            🔊 Awaaz me sunein
+        </button>
+
+    </div>
+
+
+<form id="bookingForm">
+
+
+<div class="grid">
+
+
+<!-- FARMER -->
+
+<div class="field">
+
+<label>Kisan Ka Naam *</label>
+
+<input
+    id="farmer_name"
+    type="text"
+    placeholder="e.g. Ramesh Kumar"
+    required
+>
+
+</div>
+
+
+<!-- MOBILE -->
+
+<div class="field">
+
+<label>Mobile Number *</label>
+
+<input
+    id="mobile"
+    type="tel"
+    maxlength="10"
+    placeholder="e.g. 9812345678"
+    required
+>
+
+</div>
+
+
+<!-- KISAN ID -->
+
+<div class="field">
+
+<label>Kisan ID (Optional)</label>
+
+<input
+    id="kisan_id"
+    type="text"
+    placeholder="e.g. HR-KRN-48921"
+>
+
+</div>
+
+
+<!-- MANDI -->
+
+<div class="field">
+
+<label>Purchase Mandi *</label>
+
+<select id="mandi" required>
+
+<option value="">
+Select Purchase Mandi
+</option>
+
+</select>
+
+</div>
+
+
+<!-- CROP -->
+
+<div class="field">
+
+<label>Fasal (Crop) *</label>
+
+<select id="crop" required>
+
+<option value="">
+Select Fasal
+</option>
+
+</select>
+
+</div>
+
+
+<!-- QUANTITY -->
+
+<div class="field">
+
+<label>Anumaanit Quantity (Quintals) *</label>
+
+<input
+    id="quantity"
+    type="number"
+    min="1"
+    max="500"
+    value="50"
+    required
+>
+
+</div>
+
+
+<!-- VILLAGE -->
+
+<div class="field">
+
+<label>Gaon / Tehsil *</label>
+
+<input
+    id="village"
+    type="text"
+    placeholder="e.g. Gharaunda"
+    required
+>
+
+</div>
+
+
+<!-- VEHICLE -->
+
+<div class="field">
+
+<label>Vaahan Prakaar *</label>
+
+<select id="vehicle_type" required>
+
+<option value="Tractor Trolley">
+🚜 Tractor Trolley
+</option>
+
+<option value="Truck">
+🚛 Truck
+</option>
+
+<option value="Mini Truck">
+🚚 Mini Truck
+</option>
+
+<option value="Other">
+Other
+</option>
+
+</select>
+
+</div>
+
+
+<!-- VEHICLE NUMBER -->
+
+<div class="field">
+
+<label>Vaahan Plate No. *</label>
+
+<input
+    id="vehicle_number"
+    type="text"
+    placeholder="e.g. RJ-14-AB-4412"
+    required
+>
+
+</div>
+
+
+<!-- DATE -->
+
+<div class="field">
+
+<label>Slot Taarikh (Date) *</label>
+
+<input
+    id="booking_date"
+    type="date"
+    required
+>
+
+</div>
+
+
+<!-- SLOT -->
+
+<div class="field">
+
+<label>Samay Window (Time Slot) *</label>
+
+<select id="slot" required>
+
+<option value="">
+Select Date & Mandi First
+</option>
+
+</select>
+
+</div>
+
+
+<!-- BANK -->
+
+<div class="field">
+
+<label>Bank A/C Last 4 Digits</label>
+
+<input
+    id="bank_last4"
+    type="text"
+    maxlength="4"
+    placeholder="e.g. 4821"
+>
+
+</div>
+
+</div>
+
+
+<!-- PAYMENT -->
+
+<div class="amount-box">
+
+<div class="money-icon">
+₹
+</div>
+
+<div>
+
+<span>Estimated MSP Payment</span>
+
+<h2 id="amount">
+₹ 0
+</h2>
+
+<p id="mspText">
+Select crop to calculate MSP
+</p>
+
+</div>
+
+</div>
+
+
+<div class="demo-note">
+
+ℹ️ <b>Prototype Demo:</b>
+MSP and mandi information shown here is demonstration data.
+Final procurement rates should be verified with the concerned authority.
+
+</div>
+
+
+<button
+    class="primary-btn"
+    type="submit"
+>
+
+    ✅ Confirm Slot Booking & Generate Token
+
+</button>
+
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- ================= STATUS ================= -->
+
+<section id="status" class="section">
+
+<div class="card">
+
+<h1>🔎 Live Token Status</h1>
+
+<p>
+Apna token number enter karke procurement status dekhein.
+</p>
+
+<div class="search-row">
+
+<input
+    id="tokenSearch"
+    placeholder="e.g. KS-260912-001"
+>
+
+<button onclick="searchToken()">
+Search
+</button>
+
+</div>
+
+
+<div id="tokenResult"></div>
+
+</div>
+
+</section>
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<section id="dashboard" class="section">
+
+<div class="card">
+
+<h1>📊 Mandi Dashboard</h1>
+
+<p>
+KisanSetu procurement monitoring dashboard.
+</p>
+
+
+<div class="stats">
+
+<div class="stat">
+<span>Total Bookings</span>
+<strong id="totalBookings">0</strong>
+</div>
+
+<div class="stat">
+<span>Farmers Benefited</span>
+<strong id="farmers">0</strong>
+</div>
+
+<div class="stat">
+<span>DBT Disbursed</span>
+<strong id="dbt">₹0</strong>
+</div>
+
+<div class="stat">
+<span>Active Tokens</span>
+<strong id="activeTokens">0</strong>
+</div>
+
+</div>
+
+
+<div class="workflow">
+
+<h2>Procurement Workflow</h2>
+
+<div class="steps">
+
+<div>1️⃣ Slot Booked</div>
+<div>2️⃣ Gate Entry</div>
+<div>3️⃣ Quality Check</div>
+<div>4️⃣ Weighment</div>
+<div>5️⃣ J-Form</div>
+<div>6️⃣ DBT Payment</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ================= CALCULATOR ================= -->
+
+<section id="calculator" class="section">
+
+<div class="card calculator">
+
+<h1>🧮 MSP Calculator</h1>
+
+<p>
+Crop aur quantity select karke estimated procurement value calculate karein.
+</p>
+
+
+<label>Fasal</label>
+
+<select id="calcCrop">
+
+<option value="">
+Select Crop
+</option>
+
+</select>
+
+
+<label>Quantity (Quintals)</label>
+
+<input
+    id="calcQuantity"
+    type="number"
+    value="50"
+    min="1"
+>
+
+
+<div class="calc-result">
+
+Estimated Value
+
+<strong id="calcAmount">
+₹0
+</strong>
+
+</div>
+
+</div>
+
+</section>
+
+
+</main>
+
+
+<!-- TOKEN MODAL -->
+
+<div id="tokenModal" class="modal">
+
+<div class="modal-box">
+
+<button
+    class="close"
+    onclick="closeModal()"
+>
+×
+</button>
+
+<div class="success">
+🎉
+</div>
+
+<h1>Slot Confirmed!</h1>
+
+<p>Your digital procurement token has been generated.</p>
+
+<div id="tokenDetails"></div>
+
+<button
+    class="primary-btn"
+    onclick="closeModal(); showSection('status')"
+>
+View Live Status
+</button>
+
+</div>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
