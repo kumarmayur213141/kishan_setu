@@ -1,538 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>KisanSetu - Farmer Procurement</title>
-
+    <title>KisanSetu - Farmer Procurement Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <header class="topbar">
-
     <div class="brand">
         <div class="logo">🌾</div>
-
         <div>
             <h2>KisanSetu</h2>
             <span>Farmer Procurement Portal</span>
         </div>
     </div>
-
-    <div class="status">
-        🟢 System Online
-    </div>
-
+    <div class="status">🟢 System Online</div>
 </header>
 
-
 <nav class="navbar">
-
-    <button onclick="showSection('booking')">
-        1. Slot Booking
-    </button>
-
-    <button onclick="showSection('status')">
-        2. Live Status
-    </button>
-
-    <button onclick="showSection('dashboard')">
-        3. Mandi Dashboard
-    </button>
-
-    <button onclick="showSection('calculator')">
-        4. MSP Calculator
-    </button>
-
+    <button onclick="showSection('booking')">1. Slot Booking</button>
+    <button onclick="showSection('status')">2. Live Status</button>
+    <button onclick="showSection('dashboard')">3. Mandi Dashboard</button>
+    <button onclick="showSection('calculator')">4. MSP Calculator</button>
 </nav>
-
 
 <main>
 
-
-<!-- ================= BOOKING ================= -->
-
+<!-- SECTION 1: BOOKING FORM WITH OTP -->
 <section id="booking" class="section active">
-
 <div class="card">
-
     <div class="section-title">
-
         <div>
             <h1>Procurement Mandi Slot Booking</h1>
-
-            <p>
-                Apni khet ki fasal sell karne ke liye live slot book karein
-                aur digital token prapt karein.
-            </p>
+            <p>Apni khet ki fasal sell karne ke liye live slot book karein aur digital token prapt karein.</p>
         </div>
-
-        <button class="voice-btn" id="voiceBtn" type="button">
-            🔊 Awaaz me sunein
-        </button>
-
+        <button class="voice-btn" id="voiceBtn" type="button">🔊 Awaaz me sunein</button>
     </div>
 
-
 <form id="bookingForm">
-
-
 <div class="grid">
 
+    <!-- FARMER NAME -->
+    <div class="field">
+        <label>Kisan Ka Naam *</label>
+        <input id="farmer_name" type="text" placeholder="e.g. Ramesh Kumar" required>
+    </div>
 
-<!-- FARMER -->
+    <!-- MOBILE NUMBER & OTP BUTTON -->
+    <div class="field">
+        <label>Mobile Number * <span id="otpBadge" class="otp-badge"></span></label>
+        <div class="otp-input-group">
+            <input id="mobile" type="tel" maxlength="10" placeholder="e.g. 9812345678" required>
+            <button type="button" id="sendOtpBtn" class="otp-btn" onclick="sendOTP()">📲 OTP Bhejein</button>
+        </div>
 
-<div class="field">
+        <!-- OTP INPUT BOX -->
+        <div id="otpSection" class="otp-box" style="display: none;">
+            <label style="font-size: 12px; color: #087f5b; font-weight: bold;">Mobile par aaya 4-digit OTP enter karein:</label>
+            <div class="otp-verify-row">
+                <input id="otp_input" type="text" maxlength="4" placeholder="1234" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 18px;">
+                <button type="button" id="verifyOtpBtn" class="otp-btn verify-btn" onclick="verifyOTP()">✅ Verify OTP</button>
+            </div>
+            <small style="display: block; margin-top: 4px; color: #666; font-size: 11px;">💡 Demo OTP screen par alert me show hoga.</small>
+        </div>
+    </div>
 
-<label>Kisan Ka Naam *</label>
+    <!-- KISAN ID -->
+    <div class="field">
+        <label>Kisan ID (Optional)</label>
+        <input id="kisan_id" type="text" placeholder="e.g. HR-KRN-48921">
+    </div>
 
-<input
-    id="farmer_name"
-    type="text"
-    placeholder="e.g. Ramesh Kumar"
-    required
->
+    <!-- MANDI SELECT -->
+    <div class="field">
+        <label>Purchase Mandi *</label>
+        <select id="mandi" required><option value="">Select Purchase Mandi</option></select>
+    </div>
 
+    <!-- CROP SELECT -->
+    <div class="field">
+        <label>Fasal (Crop) *</label>
+        <select id="crop" required><option value="">Select Fasal</option></select>
+    </div>
+
+    <!-- QUANTITY -->
+    <div class="field">
+        <label>Anumaanit Quantity (Quintals) *</label>
+        <input id="quantity" type="number" min="1" max="500" value="50" required>
+    </div>
+
+    <!-- VILLAGE -->
+    <div class="field">
+        <label>Gaon / Tehsil *</label>
+        <input id="village" type="text" placeholder="e.g. Gharaunda" required>
+    </div>
+
+    <!-- VEHICLE TYPE -->
+    <div class="field">
+        <label>Vaahan Prakaar *</label>
+        <select id="vehicle_type" required>
+            <option value="Tractor Trolley">🚜 Tractor Trolley</option>
+            <option value="Truck">🚛 Truck</option>
+            <option value="Mini Truck">🚚 Mini Truck</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <!-- VEHICLE NUMBER -->
+    <div class="field">
+        <label>Vaahan Plate No. *</label>
+        <input id="vehicle_number" type="text" placeholder="e.g. RJ-14-AB-4412" required>
+    </div>
+
+    <!-- DATE -->
+    <div class="field">
+        <label>Slot Taarikh (Date) *</label>
+        <input id="booking_date" type="date" required>
+    </div>
+
+    <!-- SLOT TIME -->
+    <div class="field">
+        <label>Samay Window (Time Slot) *</label>
+        <select id="slot" required><option value="">Select Date & Mandi First</option></select>
+    </div>
+
+    <!-- BANK ACCOUNT LAST 4 -->
+    <div class="field">
+        <label>Bank A/C Last 4 Digits</label>
+        <input id="bank_last4" type="text" maxlength="4" placeholder="e.g. 4821">
+    </div>
 </div>
 
-
-<!-- MOBILE -->
-
-<div class="field">
-
-<label>Mobile Number *</label>
-
-<input
-    id="mobile"
-    type="tel"
-    maxlength="10"
-    placeholder="e.g. 9812345678"
-    required
->
-
-</div>
-
-
-<!-- KISAN ID -->
-
-<div class="field">
-
-<label>Kisan ID (Optional)</label>
-
-<input
-    id="kisan_id"
-    type="text"
-    placeholder="e.g. HR-KRN-48921"
->
-
-</div>
-
-
-<!-- MANDI -->
-
-<div class="field">
-
-<label>Purchase Mandi *</label>
-
-<select id="mandi" required>
-
-<option value="">
-Select Purchase Mandi
-</option>
-
-</select>
-
-</div>
-
-
-<!-- CROP -->
-
-<div class="field">
-
-<label>Fasal (Crop) *</label>
-
-<select id="crop" required>
-
-<option value="">
-Select Fasal
-</option>
-
-</select>
-
-</div>
-
-
-<!-- QUANTITY -->
-
-<div class="field">
-
-<label>Anumaanit Quantity (Quintals) *</label>
-
-<input
-    id="quantity"
-    type="number"
-    min="1"
-    max="500"
-    value="50"
-    required
->
-
-</div>
-
-
-<!-- VILLAGE -->
-
-<div class="field">
-
-<label>Gaon / Tehsil *</label>
-
-<input
-    id="village"
-    type="text"
-    placeholder="e.g. Gharaunda"
-    required
->
-
-</div>
-
-
-<!-- VEHICLE -->
-
-<div class="field">
-
-<label>Vaahan Prakaar *</label>
-
-<select id="vehicle_type" required>
-
-<option value="Tractor Trolley">
-🚜 Tractor Trolley
-</option>
-
-<option value="Truck">
-🚛 Truck
-</option>
-
-<option value="Mini Truck">
-🚚 Mini Truck
-</option>
-
-<option value="Other">
-Other
-</option>
-
-</select>
-
-</div>
-
-
-<!-- VEHICLE NUMBER -->
-
-<div class="field">
-
-<label>Vaahan Plate No. *</label>
-
-<input
-    id="vehicle_number"
-    type="text"
-    placeholder="e.g. RJ-14-AB-4412"
-    required
->
-
-</div>
-
-
-<!-- DATE -->
-
-<div class="field">
-
-<label>Slot Taarikh (Date) *</label>
-
-<input
-    id="booking_date"
-    type="date"
-    required
->
-
-</div>
-
-
-<!-- SLOT -->
-
-<div class="field">
-
-<label>Samay Window (Time Slot) *</label>
-
-<select id="slot" required>
-
-<option value="">
-Select Date & Mandi First
-</option>
-
-</select>
-
-</div>
-
-
-<!-- BANK -->
-
-<div class="field">
-
-<label>Bank A/C Last 4 Digits</label>
-
-<input
-    id="bank_last4"
-    type="text"
-    maxlength="4"
-    placeholder="e.g. 4821"
->
-
-</div>
-
-</div>
-
-
-<!-- PAYMENT -->
-
+<!-- AMOUNT BOX -->
 <div class="amount-box">
-
-<div class="money-icon">
-₹
+    <div class="money-icon">₹</div>
+    <div>
+        <span>Estimated MSP Payment</span>
+        <h2 id="amount">₹ 0</h2>
+        <p id="mspText">Select crop to calculate MSP</p>
+    </div>
 </div>
 
-<div>
-
-<span>Estimated MSP Payment</span>
-
-<h2 id="amount">
-₹ 0
-</h2>
-
-<p id="mspText">
-Select crop to calculate MSP
-</p>
-
-</div>
-
-</div>
-
-
-<div class="demo-note">
-
-ℹ️ <b>Prototype Demo:</b>
-MSP and mandi information shown here is demonstration data.
-Final procurement rates should be verified with the concerned authority.
-
-</div>
-
-
-<button
-    class="primary-btn"
-    type="submit"
->
-
-    ✅ Confirm Slot Booking & Generate Token
-
-</button>
-
-
+<button class="primary-btn" type="submit" id="submitBtn">✅ Confirm Slot Booking & Generate Token</button>
 </form>
-
 </div>
-
 </section>
 
-
-<!-- ================= STATUS ================= -->
-
+<!-- SECTION 2: LIVE STATUS -->
 <section id="status" class="section">
-
 <div class="card">
-
-<h1>🔎 Live Token Status</h1>
-
-<p>
-Apna token number enter karke procurement status dekhein.
-</p>
-
-<div class="demo-note">
-    ℹ️ <b>Demo Workflow:</b> Token search karne ke baad <b>Next Step</b> button se
-    Gate Entry → Quality Check → Weighment → J-Form → DBT ka flow demo kar sakte hain.
+    <h1>🔎 Live Token Status</h1>
+    <p>Apna token number enter karke procurement status dekhein.</p>
+    <div class="search-row">
+        <input id="tokenSearch" placeholder="e.g. KS-260912-001">
+        <button onclick="searchToken()">Search</button>
+    </div>
+    <div id="tokenResult"></div>
 </div>
-
-<div class="search-row">
-
-<input
-    id="tokenSearch"
-    placeholder="e.g. KS-260912-001"
->
-
-<button onclick="searchToken()">
-Search
-</button>
-
-</div>
-
-
-<div id="tokenResult"></div>
-
-</div>
-
 </section>
 
-
-<!-- ================= DASHBOARD ================= -->
-
+<!-- SECTION 3: MANDI DASHBOARD -->
 <section id="dashboard" class="section">
-
 <div class="card">
-
-<h1>📊 Mandi Dashboard</h1>
-
-<p>
-KisanSetu procurement monitoring dashboard.
-</p>
-
-
-<div class="stats">
-
-<div class="stat">
-<span>Total Bookings</span>
-<strong id="totalBookings">0</strong>
+    <h1>📊 Mandi Dashboard</h1>
+    <div class="stats">
+        <div class="stat"><span>Total Bookings</span><strong id="totalBookings">0</strong></div>
+        <div class="stat"><span>Farmers Benefited</span><strong id="farmers">0</strong></div>
+        <div class="stat"><span>DBT Disbursed</span><strong id="dbt">₹0</strong></div>
+        <div class="stat"><span>Active Tokens</span><strong id="activeTokens">0</strong></div>
+    </div>
 </div>
-
-<div class="stat">
-<span>Farmers Benefited</span>
-<strong id="farmers">0</strong>
-</div>
-
-<div class="stat">
-<span>DBT Disbursed</span>
-<strong id="dbt">₹0</strong>
-</div>
-
-<div class="stat">
-<span>Active Tokens</span>
-<strong id="activeTokens">0</strong>
-</div>
-
-</div>
-
-
-<div class="workflow">
-
-<h2>Procurement Workflow</h2>
-
-<div class="steps">
-
-<div>1️⃣ Slot Booked</div>
-<div>2️⃣ Gate Entry</div>
-<div>3️⃣ Quality Check</div>
-<div>4️⃣ Weighment</div>
-<div>5️⃣ J-Form</div>
-<div>6️⃣ DBT Payment</div>
-
-</div>
-
-</div>
-
-</div>
-
 </section>
 
-
-<!-- ================= CALCULATOR ================= -->
-
+<!-- SECTION 4: MSP CALCULATOR -->
 <section id="calculator" class="section">
-
 <div class="card calculator">
-
-<h1>🧮 MSP Calculator</h1>
-
-<p>
-Crop aur quantity select karke estimated procurement value calculate karein.
-</p>
-
-
-<label>Fasal</label>
-
-<select id="calcCrop">
-
-<option value="">
-Select Crop
-</option>
-
-</select>
-
-
-<label>Quantity (Quintals)</label>
-
-<input
-    id="calcQuantity"
-    type="number"
-    value="50"
-    min="1"
->
-
-
-<div class="calc-result">
-
-Estimated Value
-
-<strong id="calcAmount">
-₹0
-</strong>
-
+    <h1>🧮 MSP Calculator</h1>
+    <label>Fasal</label>
+    <select id="calcCrop"><option value="">Select Crop</option></select>
+    <label>Quantity (Quintals)</label>
+    <input id="calcQuantity" type="number" value="50" min="1">
+    <div class="calc-result">Estimated Value <strong id="calcAmount">₹0</strong></div>
 </div>
-
-</div>
-
 </section>
-
 
 </main>
 
-
-<!-- TOKEN MODAL -->
-
+<!-- TOKEN CONFIRMATION MODAL -->
 <div id="tokenModal" class="modal">
-
 <div class="modal-box">
-
-<button
-    class="close"
-    onclick="closeModal()"
->
-×
-</button>
-
-<div class="success">
-🎉
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="success">🎉</div>
+    <h1>Slot Confirmed!</h1>
+    <p>Your digital procurement token has been generated.</p>
+    <div id="tokenDetails"></div>
+    <button class="primary-btn" onclick="closeModal(); showSection('status')">View Live Status</button>
 </div>
-
-<h1>Slot Confirmed!</h1>
-
-<p>Your digital procurement token has been generated.</p>
-
-<div id="tokenDetails"></div>
-
-<button
-    class="primary-btn"
-    onclick="closeModal(); showSection('status')"
->
-View Live Status
-</button>
-
 </div>
-
-</div>
-
 
 <script src="app.js"></script>
-
 </body>
-
 </html>
