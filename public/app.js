@@ -25,7 +25,7 @@ function setMinimumDate() {
 }
 
 // =====================================
-// OTP VERIFICATION FUNCTIONS
+// OTP VERIFICATION LOGIC
 // =====================================
 
 async function sendOTP() {
@@ -259,28 +259,107 @@ function closeModal() { document.getElementById("tokenModal").classList.remove("
 
 async function searchToken() {
     const token = document.getElementById("tokenSearch").value.trim().toUpperCase();
-    if (!token) return;
+    if (!token) {
+        alert("Token number enter karein.");
+        return;
+    }
     try {
         const res = await fetch(`${API}/token/${token}`);
         const result = await res.json();
-        if (!res.ok) { document.getElementById("tokenResult").innerHTML = `<p style="color:red;margin-top:15px;">❌ Token not found</p>`; return; }
+        if (!res.ok) {
+            document.getElementById("tokenResult").innerHTML = `<p style="color:#d9534f; margin-top:15px; font-weight:bold;">❌ Token not found. Please check token number.</p>`;
+            return;
+        }
         renderTokenStatus(result.booking);
     } catch (err) { console.error(err); }
 }
+
+// =====================================
+// PAYMENT STATUS & WORKFLOW RENDERER
+// =====================================
 
 function renderTokenStatus(booking) {
     const statuses = ["Booked", "Gate Entry", "Quality Check", "Weighment", "J-Form Generated", "DBT Paid"];
     const currentIndex = statuses.indexOf(booking.status);
 
-    let html = `<div class="token-card"><div class="token-number">${booking.token}</div><div class="timeline">`;
+    const isPaid = booking.status === "DBT Paid" || (booking.dbt && booking.dbt.status === "Paid");
+    const dbtAmount = booking.dbt ? booking.dbt.amount : booking.estimated_amount;
+    const bankLast4 = booking.bank_last4 || "4821";
+
+    let html = `
+        <div class="token-card">
+            <div class="token-number">${booking.token}</div>
+
+            <div class="token-grid">
+                <div class="token-item"><span>Farmer Name</span><strong>${booking.farmer_name} (${booking.mobile})</strong></div>
+                <div class="token-item"><span>Crop & Quantity</span><strong>${booking.crop_name} - ${booking.quantity} Qtl</strong></div>
+                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
+                <div class="token-item"><span>Slot Date</span><strong>${formatDate(booking.date)} (${booking.slot})</strong></div>
+            </div>
+
+            <!-- PAYMENT STATUS CARD -->
+            <div class="payment-status-card ${isPaid ? 'paid' : 'pending'}">
+                <div class="payment-header">
+                    <span class="payment-icon">${isPaid ? '💳' : '⏳'}</span>
+                    <div>
+                        <h3>DBT Payment Status: <span class="status-title">${isPaid ? 'PAID / DISBURSED ✅' : 'PENDING ⏳'}</span></h3>
+                        <p>${isPaid ? 'MSP Payment successfully transferred to Aadhaar Bank A/c' : 'Payment will be released after Weighment & J-Form verification'}</p>
+                    </div>
+                </div>
+
+                <div class="payment-details-grid">
+                    <div>
+                        <span class="lbl">Amount ${isPaid ? 'Paid' : 'Estimated'}:</span>
+                        <strong class="val amount-green">${formatCurrency(dbtAmount)}</strong>
+                    </div>
+                    <div>
+                        <span class="lbl">Bank Account:</span>
+                        <strong class="val">Aadhaar Bank A/c (****${bankLast4})</strong>
+                    </div>
+                    <div>
+                        <span class="lbl">DBT Ref No:</span>
+                        <strong class="val">${isPaid ? (booking.dbt.ref_no || 'DBT-2026-984120') : 'Generated upon payment'}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <h4 style="margin-top: 25px; color: #087f5b;">Procurement Stage Timeline:</h4>
+            <div class="timeline">
+    `;
+
     statuses.forEach((status, idx) => {
         const active = idx <= currentIndex;
-        html += `<div class="timeline-item ${active ? "active" : ""}">${active ? "✅" : "⏳"} <strong>${status}</strong></div>`;
+        html += `
+            <div class="timeline-item ${active ? "active" : ""}">
+                ${active ? "✅" : "⏳"} <strong>${status}</strong>
+                ${status === "DBT Paid" ? (isPaid ? ' — <span style="color:#2b8a3e; font-weight:bold;">Direct Benefit Transfer Completed</span>' : ' — Payment Pending') : ''}
+            </div>
+        `;
     });
+
     if (currentIndex >= 0 && currentIndex < statuses.length - 1) {
-        html += `<div class="workflow-action"><button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}', '${booking.token}')">▶️ Next Step: ${statuses[currentIndex + 1]}</button></div>`;
+        html += `
+            <div class="workflow-action">
+                <button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}', '${booking.token}')">
+                    ▶️ Advance Stage to: ${statuses[currentIndex + 1]}
+                </button>
+                <small>Demo Note: Click button to test next stage workflow (Quality → Weighment → J-Form → DBT Payout).</small>
+            </div>
+        `;
+    } else if (isPaid) {
+        html += `
+            <div class="workflow-complete">
+                🎉 <b>Procurement Workflow Complete!</b> ₹${dbtAmount.toLocaleString('en-IN')} Direct Benefit Transfer (DBT) has been credited.
+            </div>
+        `;
     }
-    html += `</div></div>`;
+
+    html += `
+            </div>
+        </div>
+    `;
+
     document.getElementById("tokenResult").innerHTML = html;
 }
 
