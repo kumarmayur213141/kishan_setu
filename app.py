@@ -24,7 +24,7 @@ app = Flask(
     static_url_path=""
 )
 
-# Native CORS Headers (Zero dependency)
+# Native CORS Headers
 @app.after_request
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
@@ -236,12 +236,16 @@ def create_booking():
         "date": booking_date,
         "slot": str(data.get("slot", "")).strip(),
         "village": str(data.get("village", "")).strip(),
-        "bank_last4": str(data.get("bank_last4", "")).strip(),
+        "bank_last4": str(data.get("bank_last4", "4821")).strip(),
         "status": "Booked",
         "quality": {"status": "Pending", "moisture": None, "grade": None},
         "weighment": {"status": "Pending", "gross_weight": None, "tare_weight": None, "net_weight": None},
         "jform": {"status": "Pending", "generated_at": None},
-        "dbt": {"status": "Pending", "amount": estimated_amount},
+        "dbt": {
+            "status": "Pending",
+            "amount": estimated_amount,
+            "ref_no": None
+        },
         "created_at": datetime.now().isoformat()
     }
 
@@ -271,6 +275,7 @@ def update_status(booking_id):
     booking["status"] = new_status
     if new_status == "DBT Paid":
         booking["dbt"]["status"] = "Paid"
+        booking["dbt"]["ref_no"] = f"DBT-2026-{random.randint(100000, 999999)}"
 
     save_db(db)
     return jsonify({"success": True, "message": "Status updated", "booking": booking})
