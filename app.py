@@ -78,7 +78,7 @@ def home():
     index_file = os.path.join(PUBLIC_DIR, "index.html")
     if os.path.exists(index_file):
         return send_from_directory(PUBLIC_DIR, "index.html")
-    return jsonify({"success": True, "message": "KisanSetu API is running"})
+    return jsonify({"success": True, "message": "KisanSetu eNAM API is running"})
 
 @app.route("/<path:path>")
 def static_files(path):
@@ -234,7 +234,7 @@ def handle_buyer_bids():
         if "buyerBids" not in db: db["buyerBids"] = []
         db["buyerBids"].insert(0, new_bid)
         save_db(db)
-        return jsonify({"success": True, "message": "Buyer Bid Placed Successfully!", "bid": new_bid}), 201
+        return jsonify({"success": True, "message": "Buyer e-Auction Bid Placed!", "bid": new_bid}), 201
 
     return jsonify({"success": True, "bids": db.get("buyerBids", [])})
 
@@ -347,5 +347,5 @@ def dashboard():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"KisanSetu Server running on port {port}...")
+    print(f"KisanSetu eNAM Server running on port {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)
