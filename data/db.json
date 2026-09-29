@@ -1,21 +1,55 @@
 {
   "mandis": [
-    { "id": "M001", "name": "Bikaner Krishi Mandi", "district": "Bikaner", "state": "Rajasthan", "lat": 28.0229, "lng": 73.3119 },
-    { "id": "M002", "name": "Nagaur Grain Mandi", "district": "Nagaur", "state": "Rajasthan", "lat": 27.2070, "lng": 73.7422 },
-    { "id": "M003", "name": "Bhinmal APMC Yard", "district": "Jalore", "state": "Rajasthan", "lat": 25.0007, "lng": 72.2627 },
-    { "id": "M004", "name": "Sikar Krishi Upaj Mandi", "district": "Sikar", "state": "Rajasthan", "lat": 27.6098, "lng": 75.1398 },
-    { "id": "M005", "name": "Kota Hadoti Mandi", "district": "Kota", "state": "Rajasthan", "lat": 25.2138, "lng": 75.8648 },
-    { "id": "M006", "name": "Udaipur Mevadi Mandi", "district": "Udaipur", "state": "Rajasthan", "lat": 24.5854, "lng": 73.7125 },
-    { "id": "M007", "name": "Alwar Mevati Mandi", "district": "Alwar", "state": "Rajasthan", "lat": 27.5530, "lng": 76.6346 },
-    { "id": "M008", "name": "Dungarpur Vagdi Mandi", "district": "Dungarpur", "state": "Rajasthan", "lat": 23.8431, "lng": 73.7147 }
+    {
+      "id": "M001",
+      "name": "Bikaner",
+      "district": "Bikaner",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M002",
+      "name": "Nagaur",
+      "district": "Nagaur",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M003",
+      "name": "Bhinmal",
+      "district": "Jalore",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M004",
+      "name": "Sikar",
+      "district": "Sikar",
+      "state": "Rajasthan"
+    }
   ],
   "crops": [
-    { "id": "C001", "name": "Wheat", "name_hi": "गेहूं", "msp": 2275 },
-    { "id": "C002", "name": "Pearl Millet", "name_hi": "बाजरा", "msp": 2350 },
-    { "id": "C003", "name": "Cotton", "name_hi": "कपास", "msp": 7710 },
-    { "id": "C004", "name": "Mustard", "name_hi": "सरसों", "msp": 5950 },
-    { "id": "C005", "name": "Gram (Chana)", "name_hi": "चना", "msp": 5440 },
-    { "id": "C006", "name": "Groundnut (Moongphali)", "name_hi": "मूंगफली", "msp": 6377 }
+    {
+      "id": "C001",
+      "name": "Wheat",
+      "name_hi": "गेहूं",
+      "msp": 2275
+    },
+    {
+      "id": "C002",
+      "name": "Pearl Millet",
+      "name_hi": "बाजरा",
+      "msp": 2350
+    },
+    {
+      "id": "C003",
+      "name": "Cotton",
+      "name_hi": "कपास",
+      "msp": 7710
+    },
+    {
+      "id": "C004",
+      "name": "Mustard",
+      "name_hi": "सरसों",
+      "msp": 5950
+    }
   ],
   "slots": [
     "09:00 AM - 11:00 AM",
@@ -23,9 +57,66 @@
     "02:00 PM - 04:00 PM",
     "04:00 PM - 06:00 PM"
   ],
-  "buyerBids": [
-    { "id": "BID-101", "buyerName": "Marwar Agro Traders", "crop": "Mustard (Sarson)", "quantityQtl": 200, "offeredPrice": 6100, "mandi": "Bikaner Krishi Mandi", "status": "Active" },
-    { "id": "BID-102", "buyerName": "Shekhawati Grains Corp", "crop": "Wheat (Wheat)", "quantityQtl": 350, "offeredPrice": 2320, "mandi": "Sikar Krishi Upaj Mandi", "status": "Active" }
+  "bookings": []
+}
+{
+  "mandis": [
+    {
+      "id": "M001",
+      "name": "Bikaner",
+      "district": "Bikaner",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M002",
+      "name": "Nagaur",
+      "district": "Nagaur",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M003",
+      "name": "Bhinmal",
+      "district": "Jalore",
+      "state": "Rajasthan"
+    },
+    {
+      "id": "M004",
+      "name": "Sikar",
+      "district": "Sikar",
+      "state": "Rajasthan"
+    }
+  ],
+  "crops": [
+    {
+      "id": "C001",
+      "name": "Wheat",
+      "name_hi": "गेहूं",
+      "msp": 2275
+    },
+    {
+      "id": "C002",
+      "name": "Pearl Millet",
+      "name_hi": "बाजरा",
+      "msp": 2350
+    },
+    {
+      "id": "C003",
+      "name": "Cotton",
+      "name_hi": "कपास",
+      "msp": 7710
+    },
+    {
+      "id": "C004",
+      "name": "Mustard",
+      "name_hi": "सरसों",
+      "msp": 5950
+    }
+  ],
+  "slots": [
+    "09:00 AM - 11:00 AM",
+    "11:00 AM - 01:00 PM",
+    "02:00 PM - 04:00 PM",
+    "04:00 PM - 06:00 PM"
   ],
   "bookings": []
 }
