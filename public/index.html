@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KisanSetu - Farmer Procurement Portal</title>
+    <title>Kisan Setu - Farmer Procurement Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,18 +12,18 @@
     <div class="brand">
         <div class="logo">🌾</div>
         <div>
-            <h2>KisanSetu</h2>
-            <span>Farmer Procurement Portal</span>
+            <h2>Kisan Setu</h2>
+            <span>e-NAM Kisan Procurement Portal</span>
         </div>
     </div>
     <div class="status">🟢 System Online</div>
 </header>
 
 <nav class="navbar">
-    <button onclick="showSection('booking')">1. Slot Booking</button>
-    <button onclick="showSection('status')">2. Live Status</button>
-    <button onclick="showSection('dashboard')">3. Mandi Dashboard</button>
-    <button onclick="showSection('calculator')">4. MSP Calculator</button>
+    <button data-section="booking" class="active" onclick="showSection('booking')">1. Slot Booking</button>
+    <button data-section="status" onclick="showSection('status')">2. Live Status</button>
+    <button data-section="dashboard" onclick="showSection('dashboard')">3. Mandi Dashboard</button>
+    <button data-section="calculator" onclick="showSection('calculator')">4. MSP Calculator</button>
 </nav>
 
 <main>
@@ -34,7 +34,7 @@
     <div class="section-title">
         <div>
             <h1>Procurement Mandi Slot Booking</h1>
-            <p>Apni khet ki fasal sell karne ke liye live slot book karein aur digital token prapt karein.</p>
+            <p>Apni khet ki fasal bechne ke liye live slot book karein aur digital token prapt karein.</p>
         </div>
         <button class="voice-btn" id="voiceBtn" type="button">🔊 Awaaz me sunein</button>
     </div>
@@ -63,14 +63,14 @@
                 <input id="otp_input" type="text" maxlength="4" placeholder="1234" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 18px;">
                 <button type="button" id="verifyOtpBtn" class="otp-btn verify-btn" onclick="verifyOTP()">✅ Verify OTP</button>
             </div>
-            <small style="display: block; margin-top: 4px; color: #666; font-size: 11px;">💡 Demo OTP screen par alert me show hoga.</small>
+            <small style="display: block; margin-top: 4px; color: #555; font-size: 11px;">💡 Demo OTP alert me milega (ya 1234 use karein).</small>
         </div>
     </div>
 
     <!-- KISAN ID -->
     <div class="field">
-        <label>Kisan ID (Optional)</label>
-        <input id="kisan_id" type="text" placeholder="e.g. HR-KRN-48921">
+        <label>Kisan ID / Parichay Patra (Optional)</label>
+        <input id="kisan_id" type="text" placeholder="e.g. RJ-BIK-48921">
     </div>
 
     <!-- MANDI SELECT -->
@@ -88,13 +88,13 @@
     <!-- QUANTITY -->
     <div class="field">
         <label>Anumaanit Quantity (Quintals) *</label>
-        <input id="quantity" type="number" min="1" max="500" value="50" required>
+        <input id="quantity" type="number" min="1" max="1000" value="50" required>
     </div>
 
     <!-- VILLAGE -->
     <div class="field">
         <label>Gaon / Tehsil *</label>
-        <input id="village" type="text" placeholder="e.g. Gharaunda" required>
+        <input id="village" type="text" placeholder="e.g. Nokha, Bikaner" required>
     </div>
 
     <!-- VEHICLE TYPE -->
@@ -111,7 +111,7 @@
     <!-- VEHICLE NUMBER -->
     <div class="field">
         <label>Vaahan Plate No. *</label>
-        <input id="vehicle_number" type="text" placeholder="e.g. RJ-14-AB-4412" required>
+        <input id="vehicle_number" type="text" placeholder="e.g. RJ-07-EA-4412" required>
     </div>
 
     <!-- DATE -->
@@ -128,7 +128,7 @@
 
     <!-- BANK ACCOUNT LAST 4 -->
     <div class="field">
-        <label>Bank A/C Last 4 Digits</label>
+        <label>Aadhaar Bank A/C Last 4 Digits</label>
         <input id="bank_last4" type="text" maxlength="4" placeholder="e.g. 4821">
     </div>
 </div>
@@ -137,9 +137,9 @@
 <div class="amount-box">
     <div class="money-icon">₹</div>
     <div>
-        <span>Estimated MSP Payment</span>
+        <span>Estimated MSP Payment (Govt MSP Guarantee)</span>
         <h2 id="amount">₹ 0</h2>
-        <p id="mspText">Select crop to calculate MSP</p>
+        <p id="mspText">Select crop and quantity to calculate MSP</p>
     </div>
 </div>
 
@@ -152,10 +152,10 @@
 <section id="status" class="section">
 <div class="card">
     <h1>🔎 Live Token & Payment Status</h1>
-    <p>Apna token number enter karke procurement aur DBT Payment status track karein.</p>
+    <p>Apna token number enter karke procurement stage aur Direct Benefit Transfer (DBT) status track karein.</p>
     <div class="search-row">
-        <input id="tokenSearch" placeholder="e.g. KS-260912-001">
-        <button onclick="searchToken()">Search</button>
+        <input id="tokenSearch" placeholder="e.g. KS-260929-001">
+        <button type="button" onclick="searchToken()">Search</button>
     </div>
     <div id="tokenResult"></div>
 </div>
@@ -164,7 +164,8 @@
 <!-- SECTION 3: MANDI DASHBOARD -->
 <section id="dashboard" class="section">
 <div class="card">
-    <h1>📊 Mandi Dashboard</h1>
+    <h1>📊 Mandi Live Procurement Dashboard</h1>
+    <p>Rajasthan Mandi Procurement & Direct DBT Disbursal Metrics</p>
     <div class="stats">
         <div class="stat"><span>Total Bookings</span><strong id="totalBookings">0</strong></div>
         <div class="stat"><span>Farmers Benefited</span><strong id="farmers">0</strong></div>
@@ -177,12 +178,19 @@
 <!-- SECTION 4: MSP CALCULATOR -->
 <section id="calculator" class="section">
 <div class="card calculator">
-    <h1>🧮 MSP Calculator</h1>
-    <label>Fasal</label>
-    <select id="calcCrop"><option value="">Select Crop</option></select>
-    <label>Quantity (Quintals)</label>
-    <input id="calcQuantity" type="number" value="50" min="1">
-    <div class="calc-result">Estimated Value <strong id="calcAmount">₹0</strong></div>
+    <h1>🧮 Minimum Support Price (MSP) Calculator</h1>
+    <p>Govt 2026 Procurement Rates Calculation</p>
+    <div style="margin-top: 20px;">
+        <label style="font-weight: bold; display: block; margin-bottom: 8px;">Fasal (Crop)</label>
+        <select id="calcCrop"><option value="">Select Crop</option></select>
+    </div>
+    <div style="margin-top: 15px;">
+        <label style="font-weight: bold; display: block; margin-bottom: 8px;">Quantity (Quintals)</label>
+        <input id="calcQuantity" type="number" value="50" min="1">
+    </div>
+    <div class="calc-result" style="margin-top: 20px; font-size: 20px; background: #eaf8f1; padding: 18px; border-radius: 12px;">
+        Estimated MSP Value: <strong id="calcAmount" style="color: #087f5b; font-size: 24px;">₹0</strong>
+    </div>
 </div>
 </section>
 
@@ -196,7 +204,7 @@
     <h1>Slot Confirmed!</h1>
     <p>Your digital procurement token has been generated.</p>
     <div id="tokenDetails"></div>
-    <button class="primary-btn" onclick="closeModal(); showSection('status')">View Live Status</button>
+    <button class="primary-btn" onclick="viewCurrentTokenStatus()" style="margin-top: 20px; width: 100%;">View Live Status & Track Workflow</button>
 </div>
 </div>
 
