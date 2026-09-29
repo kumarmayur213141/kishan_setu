@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KisanSetu - Farmer Procurement Portal</title>
+    <title>KisanSetu - Integrated eNAM & Procurement Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,94 +12,140 @@
     <div class="brand">
         <div class="logo">🌾</div>
         <div>
-            <h2>KisanSetu</h2>
-            <span>Farmer Procurement Portal</span>
+            <h2 id="app_title">KisanSetu eNAM</h2>
+            <span id="app_subtitle">Integrated Farmer Procurement & Trading Portal</span>
         </div>
     </div>
-    <div class="status">🟢 System Online</div>
+
+    <!-- ROLE TOGGLE & REGIONAL LANGUAGE SELECTOR -->
+    <div class="header-actions">
+        <!-- Role Toggle (Seller vs Buyer) -->
+        <div class="role-selector">
+            <button id="roleSellerBtn" class="role-btn active" onclick="switchUserRole('seller')">
+                👨‍🌾 Seller (Kisan)
+            </button>
+            <button id="roleBuyerBtn" class="role-btn" onclick="switchUserRole('buyer')">
+                🏢 Buyer (Vyapari)
+            </button>
+        </div>
+
+        <!-- 8 Language Options Selector -->
+        <select id="langSelect" class="lang-dropdown" onchange="changeLanguage(this.value)">
+            <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="marwari">🗣️ मारवाड़ी (Marwari)</option>
+            <option value="sekhavati">🗣️ शेखावाटी (Sekhavati)</option>
+            <option value="hadoti">🗣️ हाड़ौती (Hadoti)</option>
+            <option value="mevadi">🗣️ मेवाड़ी (Mevadi)</option>
+            <option value="vagdi">🗣️ वागड़ी (Vagdi)</option>
+            <option value="mevati">🗣️ मेवाती (Mevati)</option>
+        </select>
+
+        <div class="status">🟢 System Online</div>
+    </div>
 </header>
 
 <nav class="navbar">
-    <button onclick="showSection('booking')">1. Slot Booking</button>
-    <button onclick="showSection('status')">2. Live Status</button>
-    <button onclick="showSection('dashboard')">3. Mandi Dashboard</button>
-    <button onclick="showSection('calculator')">4. MSP Calculator</button>
+    <button onclick="showSection('booking')" id="nav_booking">1. Slot Booking</button>
+    <button onclick="showSection('status')" id="nav_status">2. Live Status & Payout</button>
+    <button onclick="showSection('buyer_portal')" id="nav_buyer">3. eNAM Buyer Portal</button>
+    <button onclick="showSection('dashboard')" id="nav_dashboard">4. Mandi Dashboard</button>
+    <button onclick="showSection('calculator')" id="nav_calculator">5. MSP Calculator</button>
 </nav>
 
 <main>
 
-<!-- SECTION 1: BOOKING FORM WITH OTP -->
+<!-- ================= SECTION 1: SLOT BOOKING WITH AADHAAR eKYC & GPS MANDI ================= -->
 <section id="booking" class="section active">
 <div class="card">
     <div class="section-title">
         <div>
-            <h1>Procurement Mandi Slot Booking</h1>
-            <p>Apni khet ki fasal sell karne ke liye live slot book karein aur digital token prapt karein.</p>
+            <h1 id="txt_booking_heading">Procurement Mandi Slot Booking</h1>
+            <p id="txt_booking_sub">Apni khet ki fasal sell karne ke liye live slot book karein aur digital token prapt karein.</p>
         </div>
         <button class="voice-btn" id="voiceBtn" type="button">🔊 Awaaz me sunein</button>
     </div>
 
 <form id="bookingForm">
-<div class="grid">
+
+    <!-- REAL AADHAAR VERIFICATION BOX -->
+    <div class="aadhaar-card-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 id="txt_aadhaar_heading">🆔 Real Aadhaar eKYC Verification</h3>
+            <span id="aadhaarBadge" class="aadhaar-badge"></span>
+        </div>
+        <p style="font-size:12px; color:#555; margin: 4px 0 10px 0;">Official UIDAI eKYC Verification for Land & Farmer Identity</p>
+
+        <div class="grid-2">
+            <div>
+                <label style="font-size:13px; font-weight:bold;">12-Digit Aadhaar Number *</label>
+                <div class="otp-input-group">
+                    <input id="aadhaar" type="text" maxlength="14" placeholder="1234 5678 9012" oninput="formatAadhaarInput(this)" required>
+                    <button type="button" id="sendAadhaarOtpBtn" class="otp-btn" onclick="sendAadhaarOTP()">📲 Get Aadhaar OTP</button>
+                </div>
+            </div>
+            <div>
+                <label style="font-size:13px; font-weight:bold;">Mobile Number *</label>
+                <input id="mobile" type="tel" maxlength="10" placeholder="e.g. 9812345678" required>
+            </div>
+        </div>
+
+        <!-- Aadhaar OTP Verification Hidden Sub-box -->
+        <div id="aadhaarOtpSection" class="otp-box" style="display: none; margin-top:12px;">
+            <label style="font-size: 12px; color: #087f5b; font-weight: bold;">Aadhaar linked Mobile par aaya 6-digit OTP enter karein:</label>
+            <div class="otp-verify-row">
+                <input id="aadhaar_otp_input" type="text" maxlength="6" placeholder="894210" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 18px;">
+                <button type="button" id="verifyAadhaarOtpBtn" class="otp-btn verify-btn" onclick="verifyAadhaarOTP()">✅ Verify Aadhaar eKYC</button>
+            </div>
+            <small style="display: block; margin-top: 4px; color: #666; font-size: 11px;">💡 Demo UIDAI OTP screen alert par dikhai dega.</small>
+        </div>
+    </div>
+
+<div class="grid" style="margin-top:20px;">
 
     <!-- FARMER NAME -->
     <div class="field">
-        <label>Kisan Ka Naam *</label>
-        <input id="farmer_name" type="text" placeholder="e.g. Ramesh Kumar" required>
+        <label id="lbl_farmer_name">Kisan Ka Naam (Farmer Name) *</label>
+        <input id="farmer_name" type="text" placeholder="Auto-fetched via Aadhaar" required>
     </div>
 
-    <!-- MOBILE NUMBER & OTP BUTTON -->
+    <!-- KISAN ID / LAND REGISTRY ID -->
     <div class="field">
-        <label>Mobile Number * <span id="otpBadge" class="otp-badge"></span></label>
-        <div class="otp-input-group">
-            <input id="mobile" type="tel" maxlength="10" placeholder="e.g. 9812345678" required>
-            <button type="button" id="sendOtpBtn" class="otp-btn" onclick="sendOTP()">📲 OTP Bhejein</button>
+        <label id="lbl_kisan_id">Land Registry / Kisan ID *</label>
+        <input id="kisan_id" type="text" placeholder="e.g. RJ-LND-48921" required>
+    </div>
+
+    <!-- MANDI SELECT WITH LIVE GPS LOCATOR -->
+    <div class="field">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label id="lbl_mandi">Purchase Mandi *</label>
+            <button type="button" class="gps-btn" onclick="findNearestMandiGPS()">📍 Pass ki Mandi (GPS)</button>
         </div>
-
-        <!-- OTP INPUT BOX -->
-        <div id="otpSection" class="otp-box" style="display: none;">
-            <label style="font-size: 12px; color: #087f5b; font-weight: bold;">Mobile par aaya 4-digit OTP enter karein:</label>
-            <div class="otp-verify-row">
-                <input id="otp_input" type="text" maxlength="4" placeholder="1234" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 18px;">
-                <button type="button" id="verifyOtpBtn" class="otp-btn verify-btn" onclick="verifyOTP()">✅ Verify OTP</button>
-            </div>
-            <small style="display: block; margin-top: 4px; color: #666; font-size: 11px;">💡 Demo OTP screen par alert me show hoga.</small>
-        </div>
-    </div>
-
-    <!-- KISAN ID -->
-    <div class="field">
-        <label>Kisan ID (Optional)</label>
-        <input id="kisan_id" type="text" placeholder="e.g. HR-KRN-48921">
-    </div>
-
-    <!-- MANDI SELECT -->
-    <div class="field">
-        <label>Purchase Mandi *</label>
         <select id="mandi" required><option value="">Select Purchase Mandi</option></select>
+        <small id="gpsStatusText" style="color:#087f5b; font-size:11px; margin-top:2px; display:block;"></small>
     </div>
 
     <!-- CROP SELECT -->
     <div class="field">
-        <label>Fasal (Crop) *</label>
+        <label id="lbl_crop">Fasal (Crop) *</label>
         <select id="crop" required><option value="">Select Fasal</option></select>
     </div>
 
     <!-- QUANTITY -->
     <div class="field">
-        <label>Anumaanit Quantity (Quintals) *</label>
+        <label id="lbl_quantity">Anumaanit Quantity (Quintals) *</label>
         <input id="quantity" type="number" min="1" max="500" value="50" required>
     </div>
 
     <!-- VILLAGE -->
     <div class="field">
-        <label>Gaon / Tehsil *</label>
-        <input id="village" type="text" placeholder="e.g. Gharaunda" required>
+        <label id="lbl_village">Gaon / Tehsil *</label>
+        <input id="village" type="text" placeholder="e.g. Gharaunda / Bikaner" required>
     </div>
 
     <!-- VEHICLE TYPE -->
     <div class="field">
-        <label>Vaahan Prakaar *</label>
+        <label id="lbl_vehicle_type">Vaahan Prakaar (Vehicle Type) *</label>
         <select id="vehicle_type" required>
             <option value="Tractor Trolley">🚜 Tractor Trolley</option>
             <option value="Truck">🚛 Truck</option>
@@ -110,25 +156,25 @@
 
     <!-- VEHICLE NUMBER -->
     <div class="field">
-        <label>Vaahan Plate No. *</label>
+        <label id="lbl_vehicle_number">Vaahan Plate No. *</label>
         <input id="vehicle_number" type="text" placeholder="e.g. RJ-14-AB-4412" required>
     </div>
 
     <!-- DATE -->
     <div class="field">
-        <label>Slot Taarikh (Date) *</label>
+        <label id="lbl_date">Slot Taarikh (Date) *</label>
         <input id="booking_date" type="date" required>
     </div>
 
     <!-- SLOT TIME -->
     <div class="field">
-        <label>Samay Window (Time Slot) *</label>
+        <label id="lbl_slot">Samay Window (Time Slot) *</label>
         <select id="slot" required><option value="">Select Date & Mandi First</option></select>
     </div>
 
     <!-- BANK ACCOUNT LAST 4 -->
     <div class="field">
-        <label>Bank A/C Last 4 Digits</label>
+        <label id="lbl_bank">Aadhaar Bank A/C Last 4 Digits</label>
         <input id="bank_last4" type="text" maxlength="4" placeholder="e.g. 4821">
     </div>
 </div>
@@ -137,7 +183,7 @@
 <div class="amount-box">
     <div class="money-icon">₹</div>
     <div>
-        <span>Estimated MSP Payment</span>
+        <span id="lbl_est_payment">Estimated MSP Payment</span>
         <h2 id="amount">₹ 0</h2>
         <p id="mspText">Select crop to calculate MSP</p>
     </div>
@@ -148,20 +194,62 @@
 </div>
 </section>
 
-<!-- SECTION 2: LIVE STATUS & PAYMENT TRACKER -->
+<!-- ================= SECTION 2: LIVE STATUS & PAYMENT TRACKER ================= -->
 <section id="status" class="section">
 <div class="card">
-    <h1>🔎 Live Token & Payment Status</h1>
-    <p>Apna token number enter karke procurement aur DBT Payment status track karein.</p>
+    <h1 id="txt_status_heading">🔎 Live Token & Payment Status</h1>
+    <p id="txt_status_sub">Apna token number enter karke procurement aur DBT Payment status track karein.</p>
     <div class="search-row">
         <input id="tokenSearch" placeholder="e.g. KS-260912-001">
-        <button onclick="searchToken()">Search</button>
+        <button onclick="searchToken()" id="btn_search_token">Search</button>
     </div>
     <div id="tokenResult"></div>
 </div>
 </section>
 
-<!-- SECTION 3: MANDI DASHBOARD -->
+<!-- ================= SECTION 3: eNAM BUYER PORTAL ================= -->
+<section id="buyer_portal" class="section">
+<div class="card">
+    <h1>🏢 eNAM Buyer & Vyapari Portal</h1>
+    <p>Real-time crop arrivals, live mandi bidding, and e-Auction order placement.</p>
+
+    <div class="grid-2" style="margin-top:20px;">
+        <div style="background:#f8f9fa; padding:20px; border-radius:12px; border:1px solid #ddd;">
+            <h3 style="color:#087f5b; margin-bottom:12px;">📈 Place e-Auction Bid (Vyapari Boli)</h3>
+            <form id="buyerBidForm" onsubmit="submitBuyerBid(event)">
+                <div class="field" style="margin-bottom:10px;">
+                    <label>Trader / Company Name:</label>
+                    <input id="bidBuyerName" type="text" placeholder="e.g. Rajasthan Grains Ltd" required>
+                </div>
+                <div class="field" style="margin-bottom:10px;">
+                    <label>Crop Required:</label>
+                    <select id="bidCrop" required></select>
+                </div>
+                <div class="field" style="margin-bottom:10px;">
+                    <label>Quantity (Quintals):</label>
+                    <input id="bidQty" type="number" value="100" min="1" required>
+                </div>
+                <div class="field" style="margin-bottom:10px;">
+                    <label>Offered Bidding Price (₹/Qtl):</label>
+                    <input id="bidPrice" type="number" value="2350" required>
+                </div>
+                <div class="field" style="margin-bottom:15px;">
+                    <label>Target Mandi:</label>
+                    <select id="bidMandi" required></select>
+                </div>
+                <button type="submit" class="primary-btn" style="width:100%;">💰 Submit Buyer Bid</button>
+            </form>
+        </div>
+
+        <div>
+            <h3 style="color:#087f5b; margin-bottom:12px;">📊 Active Mandi Bids & e-Auctions</h3>
+            <div id="buyerBidsContainer" class="bids-list"></div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================= SECTION 4: MANDI DASHBOARD ================= -->
 <section id="dashboard" class="section">
 <div class="card">
     <h1>📊 Mandi Dashboard</h1>
@@ -174,7 +262,7 @@
 </div>
 </section>
 
-<!-- SECTION 4: MSP CALCULATOR -->
+<!-- ================= SECTION 5: MSP CALCULATOR ================= -->
 <section id="calculator" class="section">
 <div class="card calculator">
     <h1>🧮 MSP Calculator</h1>
