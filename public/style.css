@@ -1,14 +1,23 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial, Helvetica, sans-serif; background: #f3f7f4; color: #17221b; }
 
-.topbar { background: white; height: 75px; padding: 0 6%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e5e5; }
+.topbar { background: white; height: auto; min-height: 75px; padding: 12px 6%; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e5e5; flex-wrap: wrap; gap: 15px; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .logo { width: 48px; height: 48px; border-radius: 12px; background: #087f5b; color: white; display: flex; align-items: center; justify-content: center; font-size: 25px; }
 .brand h2 { color: #087f5b; }
 .brand span { color: #68736d; font-size: 13px; }
-.status { background: #e9f8ef; color: #167344; padding: 10px 16px; border-radius: 20px; font-weight: bold; }
 
-.navbar { background: white; display: flex; justify-content: center; gap: 8px; padding: 12px; border-bottom: 1px solid #ddd; }
+/* HEADER ACTIONS & ROLE SELECTOR */
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.role-selector { display: flex; background: #eef5f1; padding: 4px; border-radius: 10px; border: 1px solid #c3e6d5; }
+.role-btn { border: none; background: transparent; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; color: #555; transition: all 0.2s; }
+.role-btn.active { background: #087f5b; color: white; box-shadow: 0 2px 6px rgba(8,127,91,0.3); }
+
+.lang-dropdown { height: 40px; border: 1px solid #087f5b; border-radius: 8px; padding: 0 10px; font-weight: bold; background: #f4fbf7; color: #087f5b; cursor: pointer; }
+
+.status { background: #e9f8ef; color: #167344; padding: 10px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+
+.navbar { background: white; display: flex; justify-content: center; gap: 8px; padding: 12px; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
 .navbar button { border: none; background: #f4f7f5; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
 .navbar button:hover { background: #087f5b; color: white; }
 
@@ -22,13 +31,22 @@ main { max-width: 1250px; margin: 30px auto; padding: 0 20px; }
 .section-title p, .card > p { color: #66716b; }
 
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
 .field { display: flex; flex-direction: column; gap: 8px; }
 .field label { font-size: 14px; font-weight: bold; }
 
 input, select { width: 100%; height: 48px; border: 1px solid #cbd4ce; border-radius: 10px; padding: 0 14px; font-size: 15px; background: white; }
 input:focus, select:focus { outline: 2px solid #8dd4b5; border-color: #087f5b; }
 
-/* OTP STYLES */
+/* AADHAAR CARD BOX */
+.aadhaar-card-box { background: #eef8f3; border: 2px solid #a3e2c5; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+.aadhaar-badge { color: #2b8a3e; font-weight: bold; font-size: 13px; }
+
+.gps-btn { background: #e6fcfa; border: 1px solid #20c997; color: #099268; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+.gps-btn:hover { background: #20c997; color: white; }
+
+/* OTP & AADHAAR STYLES */
 .otp-input-group { display: flex; gap: 8px; }
 .otp-btn { background: #087f5b; color: white; border: none; padding: 0 16px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
 .otp-btn:hover { background: #056746; }
@@ -36,60 +54,23 @@ input:focus, select:focus { outline: 2px solid #8dd4b5; border-color: #087f5b; }
 .otp-btn.verify-btn:hover { background: #216e30; }
 .otp-box { margin-top: 8px; padding: 12px; background: #eaf8f1; border: 1px solid #b2f2bb; border-radius: 10px; }
 .otp-verify-row { display: flex; gap: 8px; margin-top: 6px; }
-.otp-badge { color: #2b8a3e; font-weight: bold; font-size: 13px; margin-left: 6px; }
+
+/* BUYER BIDS */
+.bids-list { display: flex; flex-direction: column; gap: 12px; }
+.bid-card { background: #f8fdfa; border: 1px solid #b2f2bb; border-radius: 10px; padding: 14px 18px; border-left: 5px solid #087f5b; }
 
 /* AMOUNT BOX */
 .amount-box { margin-top: 30px; padding: 20px; background: #eaf8f1; border-radius: 15px; display: flex; align-items: center; gap: 18px; }
 .money-icon { width: 55px; height: 55px; background: #087f5b; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 25px; }
 .amount-box span { color: #53615a; }
 .amount-box h2 { font-size: 30px; color: #087f5b; margin: 4px 0; }
-.amount-box p { font-size: 13px; }
-
-.demo-note { margin-top: 18px; background: #fff8e5; padding: 14px; border-radius: 10px; color: #705d22; font-size: 13px; }
-
-/* BUTTONS */
-.primary-btn { border: none; background: #087f5b; color: white; padding: 15px 24px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; }
-.primary-btn:hover { background: #056746; }
-form .primary-btn { margin-top: 22px; width: 100%; }
-.voice-btn { border: 1px solid #aadbc7; background: #effaf5; color: #087f5b; padding: 12px 16px; border-radius: 10px; cursor: pointer; }
-
-/* SEARCH & DASHBOARD */
-.search-row { display: flex; gap: 10px; margin-top: 25px; }
-.search-row button { background: #087f5b; color: white; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-.stats { margin-top: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-.stat { background: #f5f8f6; border-radius: 15px; padding: 22px; }
-.stat span { color: #66716b; }
-.stat strong { display: block; margin-top: 10px; font-size: 28px; color: #087f5b; }
 
 /* PAYMENT STATUS CARD */
-.payment-status-card {
-    margin-top: 20px;
-    padding: 18px 22px;
-    border-radius: 12px;
-    border-left: 6px solid #ffc107;
-    background: #fff9db;
-}
-.payment-status-card.paid {
-    border-left-color: #2b8a3e;
-    background: #eaf8f1;
-}
-.payment-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+.payment-status-card { margin-top: 20px; padding: 18px 22px; border-radius: 12px; border-left: 6px solid #ffc107; background: #fff9db; }
+.payment-status-card.paid { border-left-color: #2b8a3e; background: #eaf8f1; }
+.payment-header { display: flex; align-items: center; gap: 14px; }
 .payment-icon { font-size: 32px; }
-.payment-header h3 { font-size: 17px; color: #17221b; }
-.payment-header p { font-size: 13px; color: #555; margin-top: 2px; }
-.payment-details-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 15px;
-    padding-top: 12px;
-    border-top: 1px dashed #cbd4ce;
-}
+.payment-details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; padding-top: 12px; border-top: 1px dashed #cbd4ce; }
 .payment-details-grid .lbl { display: block; font-size: 12px; color: #666; }
 .payment-details-grid .val { display: block; font-size: 15px; font-weight: bold; color: #17221b; margin-top: 2px; }
 .payment-details-grid .amount-green { color: #087f5b; font-size: 18px; }
@@ -99,32 +80,24 @@ form .primary-btn { margin-top: 22px; width: 100%; }
 .token-number { font-size: 34px; font-weight: bold; color: #087f5b; margin: 10px 0 20px; }
 .token-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
 .token-item { padding: 12px; background: white; border-radius: 8px; }
-.token-item span { display: block; color: #707a74; font-size: 12px; }
-.token-item strong { display: block; margin-top: 5px; }
-
 .timeline { margin-top: 25px; }
 .timeline-item { padding: 15px; border-left: 4px solid #087f5b; margin-bottom: 10px; background: white; }
 .timeline-item.active { background: #eaf8f1; }
 
-/* MODAL */
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); justify-content: center; align-items: center; padding: 20px; z-index: 100; }
 .modal.show { display: flex; }
 .modal-box { background: white; width: 500px; max-width: 100%; border-radius: 20px; padding: 35px; text-align: center; position: relative; }
-.close { position: absolute; right: 18px; top: 15px; border: none; background: none; font-size: 30px; cursor: pointer; }
-.success { font-size: 55px; }
-.modal-box h1 { color: #087f5b; margin: 10px 0; }
 
-.workflow-action { margin-top: 20px; padding: 18px; background: #fff8e5; border-radius: 12px; text-align: center; }
+.primary-btn { border: none; background: #087f5b; color: white; padding: 15px 24px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; }
+.primary-btn:hover { background: #056746; }
+.voice-btn { border: 1px solid #aadbc7; background: #effaf5; color: #087f5b; padding: 12px 16px; border-radius: 10px; cursor: pointer; }
 
 @media (max-width: 900px) {
-    .grid { grid-template-columns: repeat(2, 1fr); }
+    .grid, .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .stats { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
-    .grid { grid-template-columns: 1fr; }
+    .grid, .grid-2 { grid-template-columns: 1fr; }
     .stats { grid-template-columns: 1fr; }
-    .topbar { height: auto; padding: 15px; }
-    .status { display: none; }
-    .token-grid { grid-template-columns: 1fr; }
-    .payment-details-grid { grid-template-columns: 1fr; }
+    .token-grid, .payment-details-grid { grid-template-columns: 1fr; }
 }
