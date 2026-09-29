@@ -2,178 +2,8 @@ const API = "/api";
 
 let crops = [];
 let mandis = [];
-let isAadhaarVerified = false;
-let currentRole = "seller";
-let currentLang = "hi";
+let isMobileVerified = false;
 
-// =====================================
-// 8 REGIONAL LANGUAGES DICTIONARY
-// =====================================
-
-const LANGUAGES = {
-    hi: {
-        app_title: "KisanSetu",
-        app_subtitle: "किसान खरीद एवं मंडी डिजिटल पोर्टल",
-        txt_booking_heading: "मंडी स्लॉट बुकिंग",
-        txt_booking_sub: "अपनी फसल बेचने के लिए पास की मंडी चुनें और लाइव टोकन पाएं।",
-        txt_aadhaar_heading: "🆔 डिजिटल आधार eKYC सत्यापन",
-        lbl_farmer_name: "किसान का नाम (Farmer Name) *",
-        lbl_kisan_id: "जमीन रजिस्ट्री / किसान ID *",
-        lbl_mandi: "खरीद मंडी (Purchase Mandi) *",
-        lbl_crop: "फसल (Crop) *",
-        lbl_quantity: "अनुमानित मात्रा (क्विंटल) *",
-        lbl_village: "गांव / तहसील *",
-        lbl_vehicle_type: "वाहन प्रकार *",
-        lbl_vehicle_number: "वाहन नंबर *",
-        lbl_date: "स्लॉट तारीख *",
-        lbl_slot: "समय स्लॉट *",
-        lbl_bank: "आधार बैंक खाता अंतिम 4 अंक",
-        lbl_est_payment: "अनुमानित एमएसपी भुगतान",
-        speech_text: "किसानसेतु पोर्टल। अपनी फसल बेचने के लिए मंडी, फसल और स्लॉट चुनें।"
-    },
-    en: {
-        app_title: "KisanSetu",
-        app_subtitle: "Farmer Procurement & Mandi Digital Portal",
-        txt_booking_heading: "Procurement Mandi Slot Booking",
-        txt_booking_sub: "Select nearby mandi and book slot to get your digital token.",
-        txt_aadhaar_heading: "🆔 Digital Aadhaar eKYC Verification",
-        lbl_farmer_name: "Farmer Name *",
-        lbl_kisan_id: "Land Registry / Kisan ID *",
-        lbl_mandi: "Purchase Mandi *",
-        lbl_crop: "Crop *",
-        lbl_quantity: "Estimated Quantity (Quintals) *",
-        lbl_village: "Village / Sub-district *",
-        lbl_vehicle_type: "Vehicle Type *",
-        lbl_vehicle_number: "Vehicle Plate No. *",
-        lbl_date: "Slot Date *",
-        lbl_slot: "Time Window *",
-        lbl_bank: "Aadhaar Bank A/c Last 4 Digits",
-        lbl_est_payment: "Estimated MSP Payment",
-        speech_text: "Welcome to KisanSetu. Book your mandi slot for crop procurement."
-    },
-    marwari: {
-        app_title: "किसानसेतु (मारवाड़ी)",
-        app_subtitle: "मारवाड़ किसान मंडी अर बेचान पोर्टल",
-        txt_booking_heading: "मंडी री बारी (स्लॉट) बुकिंग",
-        txt_booking_sub: "आपरी जिणस (फसल) बेचबा सारू पास री मंडी अर टेम चुणो।",
-        txt_aadhaar_heading: "🆔 आधार कार्ड सत्यापण (eKYC)",
-        lbl_farmer_name: "किसान रो नाम *",
-        lbl_kisan_id: "जमीन खाता री ID *",
-        lbl_mandi: "बेचान री मंडी *",
-        lbl_crop: "जिणस / फसल *",
-        lbl_quantity: "बोरी / क्विंटल *",
-        lbl_village: "गांव / ढाणी *",
-        lbl_vehicle_type: "गाड़ी / ट्राली *",
-        lbl_vehicle_number: "गाड़ी रा नंबर *",
-        lbl_date: "बारी री तारीख *",
-        lbl_slot: "टेम रो टाइम *",
-        lbl_bank: "बैंक खाता रा आखरी ४ नंबर",
-        lbl_est_payment: "अंदाजित सरकारी भाव रुपया",
-        speech_text: "राम राम सा! किसानसेतु में आपरी फसल बेचबा सारू मंडी अर टाइम चुणो।"
-    },
-    sekhavati: {
-        app_title: "किसानसेतु (शेखावाटी)",
-        app_subtitle: "शेखावाटी मंडी अर फसल बेचान पोर्टल",
-        txt_booking_heading: "मंडी की बारी (स्लॉट) बुक करो",
-        txt_booking_sub: "आपणी फसल बेचबा ताई नजदीकी मंडी अर टेम सेलेक्ट करो।",
-        txt_aadhaar_heading: "🆔 आधार कार्ड वेरिफिकेशन",
-        lbl_farmer_name: "किसान को नाम *",
-        lbl_kisan_id: "जमीन की रसीद ID *",
-        lbl_mandi: "खरीद मंडी *",
-        lbl_crop: "फसल *",
-        lbl_quantity: "मात्रा (क्विंटल) *",
-        lbl_village: "गांव / कस्वा *",
-        lbl_vehicle_type: "साधन / ट्राली *",
-        lbl_vehicle_number: "साधन का नंबर *",
-        lbl_date: "तारीख *",
-        lbl_slot: "टेम का स्लॉट *",
-        lbl_bank: "बैंक खाता का पिछला ४ नंबर",
-        lbl_est_payment: "अनुमानित रुप्या",
-        speech_text: "राम राम भाई! शेखावाटी मंडी में फसल बेचबा ताई टोकन बुक करो।"
-    },
-    hadoti: {
-        app_title: "किसानसेतु (हाड़ौती)",
-        app_subtitle: "हाड़ौती मंडी खरीद पोर्टल",
-        txt_booking_heading: "मंडी स्लॉट बुकिंग",
-        txt_booking_sub: "फसल बेचना के खातर मंडी और टाइम चुणो।",
-        txt_aadhaar_heading: "🆔 आधार eKYC चेकिंग",
-        lbl_farmer_name: "किसान को नाम *",
-        lbl_kisan_id: "खसरा / जमीन ID *",
-        lbl_mandi: "हाड़ौती मंडी *",
-        lbl_crop: "फसल *",
-        lbl_quantity: "क्विंटल *",
-        lbl_village: "गांव *",
-        lbl_vehicle_type: "ट्राली / ट्रक *",
-        lbl_vehicle_number: "गाड़ी नंबर *",
-        lbl_date: "तारीख *",
-        lbl_slot: "टाइम स्लॉट *",
-        lbl_bank: "बैंक खाता नंबर",
-        lbl_est_payment: "कुल पेमेंट",
-        speech_text: "जय हाड़ौती! मंडी में फसल बेचना के खातर स्लॉट बुक करो।"
-    },
-    mevadi: {
-        app_title: "किसानसेतु (मेवाड़ी)",
-        app_subtitle: "मेवाड़ मंडी पोर्टल",
-        txt_booking_heading: "मंडी बारी बुकिंग",
-        txt_booking_sub: "फसल बेचवा सारू मंडी अर टाइम सेलेक्ट करो।",
-        txt_aadhaar_heading: "🆔 आधार सत्यापण",
-        lbl_farmer_name: "किसान रो नाम *",
-        lbl_kisan_id: "खाता ID *",
-        lbl_mandi: "मेवाड़ मंडी *",
-        lbl_crop: "फसल *",
-        lbl_quantity: "क्विंटल *",
-        lbl_village: "गांव *",
-        lbl_vehicle_type: "गाड़ी *",
-        lbl_vehicle_number: "गाड़ी नंबर *",
-        lbl_date: "तारीख *",
-        lbl_slot: "टाइम *",
-        lbl_bank: "बैंक नंबर",
-        lbl_est_payment: "पेमेंट",
-        speech_text: "खम्मा घणी! मेवाड़ मंडी में फसल बेचवा सारू स्लॉट बुक करो।"
-    },
-    vagdi: {
-        app_title: "किसानसेतु (वागड़ी)",
-        app_subtitle: "वागड़ मंडी पोर्टल",
-        txt_booking_heading: "मंडी स्लॉट बुकिंग",
-        txt_booking_sub: "फसल वेचवा साटू मंडी अने टाइम चुणो।",
-        txt_aadhaar_heading: "🆔 आधार eKYC चेक",
-        lbl_farmer_name: "किसान नु नाम *",
-        lbl_kisan_id: "जमीन ID *",
-        lbl_mandi: "मंडी *",
-        lbl_crop: "फसल *",
-        lbl_quantity: "क्विंटल *",
-        lbl_village: "गांव *",
-        lbl_vehicle_type: "गाड़ी *",
-        lbl_vehicle_number: "गाड़ी नंबर *",
-        lbl_date: "तारीख *",
-        lbl_slot: "टाइम *",
-        lbl_bank: "बैंक खातु *",
-        lbl_est_payment: "कुल रुपया",
-        speech_text: "जोहार सा! वागड़ मंडी मा फसल वेचवा साटू टोकन बुक करो।"
-    },
-    mevati: {
-        app_title: "किसानसेतु (मेवाती)",
-        app_subtitle: "मेवात अलवर मंडी बेचान पोर्टल",
-        txt_booking_heading: "मंडी स्लॉट बुकिंग",
-        txt_booking_sub: "फसल बेचन के लिए मंडी और टेम सेलेक्ट करो।",
-        txt_aadhaar_heading: "🆔 आधार कार्ड वेरिफिकेशन",
-        lbl_farmer_name: "किसान को नाम *",
-        lbl_kisan_id: "जमीन ID *",
-        lbl_mandi: "मेवात मंडी *",
-        lbl_crop: "फसल *",
-        lbl_quantity: "क्विंटल *",
-        lbl_village: "गांव *",
-        lbl_vehicle_type: "गाड़ी *",
-        lbl_vehicle_number: "नंबर प्लेट *",
-        lbl_date: "तारीख *",
-        lbl_slot: "टेम स्लॉट *",
-        lbl_bank: "बैंक अकाउंट नंबर",
-        lbl_est_payment: "अनुमानित रुपया",
-        speech_text: "सलाम अलैकुम! अलवर मेवात मंडी में फसल बेचन के लिए स्लॉट बुक करो।"
-    }
-};
-
-// Initialize App
 document.addEventListener("DOMContentLoaded", async () => {
     setMinimumDate();
     await loadMandis();
@@ -181,7 +11,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupEvents();
     setupVoice();
     loadDashboard();
-    loadBuyerBids();
 });
 
 function setMinimumDate() {
@@ -196,131 +25,37 @@ function setMinimumDate() {
 }
 
 // =====================================
-// LANGUAGE SWITCHER
+// OTP VERIFICATION LOGIC
 // =====================================
 
-function changeLanguage(langCode) {
-    currentLang = langCode;
-    const dict = LANGUAGES[langCode] || LANGUAGES["hi"];
+async function sendOTP() {
+    const mobile = document.getElementById("mobile").value.trim();
 
-    for (const key in dict) {
-        const el = document.getElementById(key);
-        if (el) {
-            el.textContent = dict[key];
-        }
-    }
-}
-
-// =====================================
-// USER ROLE SWITCHER (Seller vs Buyer)
-// =====================================
-
-function switchUserRole(role) {
-    currentRole = role;
-    const sellerBtn = document.getElementById("roleSellerBtn");
-    const buyerBtn = document.getElementById("roleBuyerBtn");
-
-    if (role === "buyer") {
-        sellerBtn.classList.remove("active");
-        buyerBtn.classList.add("active");
-        showSection("buyer_portal");
-        alert("🏢 Switched to Vyapari (Buyer) Mode! You can place purchase bids.");
-    } else {
-        buyerBtn.classList.remove("active");
-        sellerBtn.classList.add("active");
-        showSection("booking");
-    }
-}
-
-// =====================================
-// GPS NEAREST MANDI LOCATOR
-// =====================================
-
-function findNearestMandiGPS() {
-    const statusText = document.getElementById("gpsStatusText");
-    if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
+    if (!/^[0-9]{10}$/.test(mobile)) {
+        alert("Please enter a valid 10-digit mobile number.");
         return;
     }
 
-    if (statusText) statusText.textContent = "⌛ Fetching your GPS location...";
-
-    navigator.geolocation.getCurrentPosition(
-        async (position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            try {
-                const res = await fetch(`${API}/nearest-mandi?lat=${lat}&lng=${lng}`);
-                const result = await res.json();
-
-                if (res.ok && result.success && result.nearest_mandi) {
-                    const nearest = result.nearest_mandi;
-                    const select = document.getElementById("mandi");
-                    select.value = nearest.id;
-
-                    if (statusText) {
-                        statusText.textContent = `📍 Nearest Mandi: ${nearest.name} (${nearest.distance_km} km away)`;
-                    }
-                    alert(`📍 GPS Location Detected!\nNearest Mandi: ${nearest.name} (${nearest.district})\nDistance: ${nearest.distance_km} km away.`);
-                    loadSlots();
-                }
-            } catch (err) {
-                console.error(err);
-                if (statusText) statusText.textContent = "❌ Could not calculate nearest mandi.";
-            }
-        },
-        (error) => {
-            alert("Please enable Location / GPS permissions to auto-detect nearest Mandi.");
-            if (statusText) statusText.textContent = "❌ GPS Access Denied.";
-        }
-    );
-}
-
-// =====================================
-// REAL AADHAAR eKYC VERIFICATION
-// =====================================
-
-function formatAadhaarInput(input) {
-    let value = input.value.replace(/\D/g, "");
-    let formatted = "";
-    for (let i = 0; i < value.length; i++) {
-        if (i > 0 && i % 4 === 0) formatted += " ";
-        formatted += value[i];
-    }
-    input.value = formatted;
-}
-
-async function sendAadhaarOTP() {
-    const aadhaarInput = document.getElementById("aadhaar");
-    const aadhaar = aadhaarInput ? aadhaarInput.value.replace(/\s/g, "").trim() : "";
-
-    if (!/^[0-9]{12}$/.test(aadhaar)) {
-        alert("Please enter a valid 12-digit Aadhaar Number.");
-        return;
-    }
-
-    const sendBtn = document.getElementById("sendAadhaarOtpBtn");
+    const sendBtn = document.getElementById("sendOtpBtn");
     sendBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API}/send-aadhaar-otp`, {
+        const response = await fetch(`${API}/send-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ aadhaar })
+            body: JSON.stringify({ mobile })
         });
 
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-            alert(result.message || "Aadhaar OTP error.");
+            alert(result.message || "OTP bhejne me error aaya.");
             sendBtn.disabled = false;
             return;
         }
 
-        document.getElementById("aadhaarOtpSection").style.display = "block";
-        alert(`🆔 UIDAI eKYC Message:\n${result.message}\nDemo Aadhaar OTP: ${result.otp}`);
-
+        document.getElementById("otpSection").style.display = "block";
+        alert(`📩 ${result.message}\nDemo OTP: ${result.otp}`);
         sendBtn.textContent = "🔄 Resend OTP";
         sendBtn.disabled = false;
 
@@ -330,47 +65,44 @@ async function sendAadhaarOTP() {
     }
 }
 
-async function verifyAadhaarOTP() {
-    const aadhaar = document.getElementById("aadhaar").value.replace(/\s/g, "").trim();
-    const otp = document.getElementById("aadhaar_otp_input").value.trim();
+async function verifyOTP() {
+    const mobile = document.getElementById("mobile").value.trim();
+    const otp = document.getElementById("otp_input").value.trim();
 
-    if (!otp || otp.length !== 6) {
-        alert("Kripya 6-digit Aadhaar OTP enter karein.");
+    if (!otp || otp.length !== 4) {
+        alert("Kripya 4-digit OTP enter karein.");
         return;
     }
 
-    const verifyBtn = document.getElementById("verifyAadhaarOtpBtn");
+    const verifyBtn = document.getElementById("verifyOtpBtn");
     verifyBtn.disabled = true;
 
     try {
-        const response = await fetch(`${API}/verify-aadhaar-otp`, {
+        const response = await fetch(`${API}/verify-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ aadhaar, otp })
+            body: JSON.stringify({ mobile, otp })
         });
 
         const result = await response.json();
 
         if (!response.ok || !result.success) {
-            alert(result.message || "Aadhaar Verification Failed.");
+            alert(result.message || "OTP Verification Failed.");
             verifyBtn.disabled = false;
             return;
         }
 
-        isAadhaarVerified = true;
-        document.getElementById("farmer_name").value = result.farmer_name;
-        document.getElementById("kisan_id").value = result.land_id;
+        isMobileVerified = true;
+        document.getElementById("otpBadge").textContent = "✅ Verified";
+        document.getElementById("otpSection").style.display = "none";
 
-        document.getElementById("aadhaarBadge").textContent = "✅ UIDAI eKYC Verified";
-        document.getElementById("aadhaarOtpSection").style.display = "none";
-
-        const sendBtn = document.getElementById("sendAadhaarOtpBtn");
+        const sendBtn = document.getElementById("sendOtpBtn");
         sendBtn.textContent = "✅ Verified";
         sendBtn.disabled = true;
         sendBtn.style.background = "#2b8a3e";
 
-        document.getElementById("aadhaar").readOnly = true;
-        alert(`🎉 Aadhaar eKYC Verified Successfully!\nFarmer Name: ${result.farmer_name}\nLand Registry ID: ${result.land_id}`);
+        document.getElementById("mobile").readOnly = true;
+        alert("🎉 Mobile Number Verification Successful!");
 
     } catch (error) {
         alert("Server Error.");
@@ -379,7 +111,7 @@ async function verifyAadhaarOTP() {
 }
 
 // =====================================
-// DATA LOADERS & EVENTS
+// API DATA LOADERS
 // =====================================
 
 async function loadMandis() {
@@ -388,14 +120,9 @@ async function loadMandis() {
         const result = await res.json();
         mandis = result.mandis || [];
         const select = document.getElementById("mandi");
-        const bidMandi = document.getElementById("bidMandi");
-
         select.innerHTML = `<option value="">Select Purchase Mandi</option>`;
-        if (bidMandi) bidMandi.innerHTML = `<option value="">Select Target Mandi</option>`;
-
         mandis.forEach(m => {
             select.innerHTML += `<option value="${m.id}">${m.name} - ${m.district}</option>`;
-            if (bidMandi) bidMandi.innerHTML += `<option value="${m.name}">${m.name}</option>`;
         });
     } catch (err) { console.error(err); }
 }
@@ -407,16 +134,11 @@ async function loadCrops() {
         crops = result.crops || [];
         const select = document.getElementById("crop");
         const calcSelect = document.getElementById("calcCrop");
-        const bidCrop = document.getElementById("bidCrop");
-
         select.innerHTML = `<option value="">Select Fasal</option>`;
         calcSelect.innerHTML = `<option value="">Select Crop</option>`;
-        if (bidCrop) bidCrop.innerHTML = `<option value="">Select Crop</option>`;
-
         crops.forEach(c => {
             select.innerHTML += `<option value="${c.id}">${c.name} (${c.name_hi})</option>`;
             calcSelect.innerHTML += `<option value="${c.id}">${c.name} - ₹${c.msp}/Qtl</option>`;
-            if (bidCrop) bidCrop.innerHTML += `<option value="${c.name}">${c.name}</option>`;
         });
     } catch (err) { console.error(err); }
 }
@@ -472,15 +194,14 @@ async function loadSlots() {
 async function submitBooking(event) {
     event.preventDefault();
 
-    if (!isAadhaarVerified) {
-        alert("⚠️ Real Aadhaar eKYC Verification zaroori hai. Pehle 'Get Aadhaar OTP' par click karein!");
+    if (!isMobileVerified) {
+        alert("⚠️ Mobile OTP verification zaroori hai. Pehle 'OTP Bhejein' par click karein!");
         return;
     }
 
     const data = {
         farmer_name: document.getElementById("farmer_name").value,
         mobile: document.getElementById("mobile").value,
-        aadhaar: document.getElementById("aadhaar").value.replace(/\s/g, ""),
         kisan_id: document.getElementById("kisan_id").value,
         mandi_id: document.getElementById("mandi").value,
         crop_id: document.getElementById("crop").value,
@@ -500,4 +221,202 @@ async function submitBooking(event) {
             body: JSON.stringify(data)
         });
         const result = await res.json();
-        if (!res.ok) { alert(result.message);
+        if (!res.ok) { alert(result.message); return; }
+
+        showToken(result.booking);
+        document.getElementById("bookingForm").reset();
+        isMobileVerified = false;
+        document.getElementById("otpBadge").textContent = "";
+        document.getElementById("mobile").readOnly = false;
+        const sendBtn = document.getElementById("sendOtpBtn");
+        sendBtn.textContent = "📲 OTP Bhejein";
+        sendBtn.disabled = false;
+        sendBtn.style.background = "#087f5b";
+
+        setMinimumDate();
+        calculateBookingAmount();
+        loadDashboard();
+    } catch (err) { alert("Server Error"); }
+}
+
+function showToken(booking) {
+    document.getElementById("tokenDetails").innerHTML = `
+        <div class="token-card">
+            <div class="token-number">${booking.token}</div>
+            <div class="token-grid">
+                <div class="token-item"><span>Farmer</span><strong>${booking.farmer_name}</strong></div>
+                <div class="token-item"><span>Crop</span><strong>${booking.crop_name}</strong></div>
+                <div class="token-item"><span>Quantity</span><strong>${booking.quantity} Quintals</strong></div>
+                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
+                <div class="token-item"><span>Date</span><strong>${formatDate(booking.date)}</strong></div>
+                <div class="token-item"><span>Time Slot</span><strong>${booking.slot}</strong></div>
+            </div>
+        </div>`;
+    document.getElementById("tokenModal").classList.add("show");
+}
+
+function closeModal() { document.getElementById("tokenModal").classList.remove("show"); }
+
+async function searchToken() {
+    const token = document.getElementById("tokenSearch").value.trim().toUpperCase();
+    if (!token) {
+        alert("Token number enter karein.");
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/token/${token}`);
+        const result = await res.json();
+        if (!res.ok) {
+            document.getElementById("tokenResult").innerHTML = `<p style="color:#d9534f; margin-top:15px; font-weight:bold;">❌ Token not found. Please check token number.</p>`;
+            return;
+        }
+        renderTokenStatus(result.booking);
+    } catch (err) { console.error(err); }
+}
+
+// =====================================
+// PAYMENT STATUS & WORKFLOW RENDERER
+// =====================================
+
+function renderTokenStatus(booking) {
+    const statuses = ["Booked", "Gate Entry", "Quality Check", "Weighment", "J-Form Generated", "DBT Paid"];
+    const currentIndex = statuses.indexOf(booking.status);
+
+    const isPaid = booking.status === "DBT Paid" || (booking.dbt && booking.dbt.status === "Paid");
+    const dbtAmount = booking.dbt ? booking.dbt.amount : booking.estimated_amount;
+    const bankLast4 = booking.bank_last4 || "4821";
+
+    let html = `
+        <div class="token-card">
+            <div class="token-number">${booking.token}</div>
+
+            <div class="token-grid">
+                <div class="token-item"><span>Farmer Name</span><strong>${booking.farmer_name} (${booking.mobile})</strong></div>
+                <div class="token-item"><span>Crop & Quantity</span><strong>${booking.crop_name} - ${booking.quantity} Qtl</strong></div>
+                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
+                <div class="token-item"><span>Slot Date</span><strong>${formatDate(booking.date)} (${booking.slot})</strong></div>
+            </div>
+
+            <!-- PAYMENT STATUS CARD -->
+            <div class="payment-status-card ${isPaid ? 'paid' : 'pending'}">
+                <div class="payment-header">
+                    <span class="payment-icon">${isPaid ? '💳' : '⏳'}</span>
+                    <div>
+                        <h3>DBT Payment Status: <span class="status-title">${isPaid ? 'PAID / DISBURSED ✅' : 'PENDING ⏳'}</span></h3>
+                        <p>${isPaid ? 'MSP Payment successfully transferred to Aadhaar Bank A/c' : 'Payment will be released after Weighment & J-Form verification'}</p>
+                    </div>
+                </div>
+
+                <div class="payment-details-grid">
+                    <div>
+                        <span class="lbl">Amount ${isPaid ? 'Paid' : 'Estimated'}:</span>
+                        <strong class="val amount-green">${formatCurrency(dbtAmount)}</strong>
+                    </div>
+                    <div>
+                        <span class="lbl">Bank Account:</span>
+                        <strong class="val">Aadhaar Bank A/c (****${bankLast4})</strong>
+                    </div>
+                    <div>
+                        <span class="lbl">DBT Ref No:</span>
+                        <strong class="val">${isPaid ? (booking.dbt.ref_no || 'DBT-2026-984120') : 'Generated upon payment'}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <h4 style="margin-top: 25px; color: #087f5b;">Procurement Stage Timeline:</h4>
+            <div class="timeline">
+    `;
+
+    statuses.forEach((status, idx) => {
+        const active = idx <= currentIndex;
+        html += `
+            <div class="timeline-item ${active ? "active" : ""}">
+                ${active ? "✅" : "⏳"} <strong>${status}</strong>
+                ${status === "DBT Paid" ? (isPaid ? ' — <span style="color:#2b8a3e; font-weight:bold;">Direct Benefit Transfer Completed</span>' : ' — Payment Pending') : ''}
+            </div>
+        `;
+    });
+
+    if (currentIndex >= 0 && currentIndex < statuses.length - 1) {
+        html += `
+            <div class="workflow-action">
+                <button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}', '${booking.token}')">
+                    ▶️ Advance Stage to: ${statuses[currentIndex + 1]}
+                </button>
+                <small>Demo Note: Click button to test next stage workflow (Quality → Weighment → J-Form → DBT Payout).</small>
+            </div>
+        `;
+    } else if (isPaid) {
+        html += `
+            <div class="workflow-complete">
+                🎉 <b>Procurement Workflow Complete!</b> ₹${dbtAmount.toLocaleString('en-IN')} Direct Benefit Transfer (DBT) has been credited.
+            </div>
+        `;
+    }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    document.getElementById("tokenResult").innerHTML = html;
+}
+
+async function advanceStatus(bookingId, nextStatus) {
+    try {
+        const res = await fetch(`${API}/bookings/${bookingId}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: nextStatus })
+        });
+        const result = await res.json();
+        renderTokenStatus(result.booking);
+        loadDashboard();
+    } catch (err) { console.error(err); }
+}
+
+async function loadDashboard() {
+    try {
+        const res = await fetch(`${API}/dashboard`);
+        const data = await res.json();
+        document.getElementById("totalBookings").textContent = data.total_bookings;
+        document.getElementById("farmers").textContent = data.farmers_benefited;
+        document.getElementById("dbt").textContent = formatCurrency(data.dbt_disbursed);
+        document.getElementById("activeTokens").textContent = data.active_tokens;
+    } catch (err) { console.error(err); }
+}
+
+function calculateMSP() {
+    const cropId = document.getElementById("calcCrop").value;
+    const qty = Number(document.getElementById("calcQuantity").value);
+    const crop = crops.find(c => c.id === cropId);
+    if (!crop || !qty) { document.getElementById("calcAmount").textContent = "₹0"; return; }
+    document.getElementById("calcAmount").textContent = formatCurrency(crop.msp * qty);
+}
+
+function setupVoice() {
+    const btn = document.getElementById("voiceBtn");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+        if (!("speechSynthesis" in window)) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("KisanSetu Portal. Apni fasal mandi me bechne ke liye slot book karein.");
+        utterance.lang = "hi-IN";
+        window.speechSynthesis.speak(utterance);
+    });
+}
+
+function showSection(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    if (id === "dashboard") loadDashboard();
+}
+
+function formatCurrency(val) {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
+}
+
+function formatDate(d) {
+    return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
