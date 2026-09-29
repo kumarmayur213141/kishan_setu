@@ -2,27 +2,35 @@
   "mandis": [
     {
       "id": "M001",
-      "name": "Bikaner",
+      "name": "Bikaner Krishi Mandi",
       "district": "Bikaner",
-      "state": "Rajasthan"
+      "state": "Rajasthan",
+      "lat": 28.0229,
+      "lng": 73.3119
     },
     {
       "id": "M002",
-      "name": "Nagaur",
+      "name": "Nagaur Krishi Mandi",
       "district": "Nagaur",
-      "state": "Rajasthan"
+      "state": "Rajasthan",
+      "lat": 27.2070,
+      "lng": 73.7423
     },
     {
       "id": "M003",
-      "name": "Bhinmal",
+      "name": "Bhinmal Krishi Mandi",
       "district": "Jalore",
-      "state": "Rajasthan"
+      "state": "Rajasthan",
+      "lat": 25.0004,
+      "lng": 72.2570
     },
     {
       "id": "M004",
-      "name": "Sikar",
+      "name": "Sikar Krishi Mandi",
       "district": "Sikar",
-      "state": "Rajasthan"
+      "state": "Rajasthan",
+      "lat": 27.6094,
+      "lng": 75.1398
     }
   ],
   "crops": [
@@ -57,66 +65,6 @@
     "02:00 PM - 04:00 PM",
     "04:00 PM - 06:00 PM"
   ],
-  "bookings": []
-}
-{
-  "mandis": [
-    {
-      "id": "M001",
-      "name": "Bikaner",
-      "district": "Bikaner",
-      "state": "Rajasthan"
-    },
-    {
-      "id": "M002",
-      "name": "Nagaur",
-      "district": "Nagaur",
-      "state": "Rajasthan"
-    },
-    {
-      "id": "M003",
-      "name": "Bhinmal",
-      "district": "Jalore",
-      "state": "Rajasthan"
-    },
-    {
-      "id": "M004",
-      "name": "Sikar",
-      "district": "Sikar",
-      "state": "Rajasthan"
-    }
-  ],
-  "crops": [
-    {
-      "id": "C001",
-      "name": "Wheat",
-      "name_hi": "गेहूं",
-      "msp": 2275
-    },
-    {
-      "id": "C002",
-      "name": "Pearl Millet",
-      "name_hi": "बाजरा",
-      "msp": 2350
-    },
-    {
-      "id": "C003",
-      "name": "Cotton",
-      "name_hi": "कपास",
-      "msp": 7710
-    },
-    {
-      "id": "C004",
-      "name": "Mustard",
-      "name_hi": "सरसों",
-      "msp": 5950
-    }
-  ],
-  "slots": [
-    "09:00 AM - 11:00 AM",
-    "11:00 AM - 01:00 PM",
-    "02:00 PM - 04:00 PM",
-    "04:00 PM - 06:00 PM"
-  ],
-  "bookings": []
+  "bookings": [],
+  "buyerBids": []
 }
