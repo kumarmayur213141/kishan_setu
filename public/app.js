@@ -33,7 +33,7 @@ const LANGUAGES = {
     },
     en: {
         app_title: "KisanSetu",
-        app_subtitle: "Integrated Farmer Procurement & Trading Portal",
+        app_subtitle: "Farmer Procurement & Mandi Digital Portal",
         txt_booking_heading: "Procurement Mandi Slot Booking",
         txt_booking_sub: "Select nearby mandi and book slot to get your digital token.",
         txt_aadhaar_heading: "🆔 Digital Aadhaar eKYC Verification",
@@ -224,7 +224,7 @@ function switchUserRole(role) {
         sellerBtn.classList.remove("active");
         buyerBtn.classList.add("active");
         showSection("buyer_portal");
-        alert("🏢 Switched to Vyapari (Buyer) Mode! You can place e-auction bids.");
+        alert("🏢 Switched to Vyapari (Buyer) Mode! You can place purchase bids.");
     } else {
         buyerBtn.classList.remove("active");
         sellerBtn.classList.add("active");
@@ -320,6 +320,7 @@ async function sendAadhaarOTP() {
 
         document.getElementById("aadhaarOtpSection").style.display = "block";
         alert(`🆔 UIDAI eKYC Message:\n${result.message}\nDemo Aadhaar OTP: ${result.otp}`);
+
         sendBtn.textContent = "🔄 Resend OTP";
         sendBtn.disabled = false;
 
@@ -499,243 +500,4 @@ async function submitBooking(event) {
             body: JSON.stringify(data)
         });
         const result = await res.json();
-        if (!res.ok) { alert(result.message); return; }
-
-        showToken(result.booking);
-        document.getElementById("bookingForm").reset();
-        isAadhaarVerified = false;
-        document.getElementById("aadhaarBadge").textContent = "";
-        document.getElementById("aadhaar").readOnly = false;
-        const sendBtn = document.getElementById("sendAadhaarOtpBtn");
-        sendBtn.textContent = "📲 Get Aadhaar OTP";
-        sendBtn.disabled = false;
-        sendBtn.style.background = "#087f5b";
-
-        setMinimumDate();
-        calculateBookingAmount();
-        loadDashboard();
-    } catch (err) { alert("Server Error"); }
-}
-
-// =====================================
-// BUYER TRADING LOGIC
-// =====================================
-
-async function loadBuyerBids() {
-    try {
-        const res = await fetch(`${API}/buyer-bids`);
-        const result = await res.json();
-        const bids = result.bids || [];
-        const container = document.getElementById("buyerBidsContainer");
-        if (!container) return;
-
-        container.innerHTML = "";
-        bids.forEach(b => {
-            container.innerHTML += `
-                <div class="bid-card">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;">
-                        <span>🏢 ${b.buyerName}</span>
-                        <span style="color:#087f5b;">₹${b.offeredPrice}/Qtl</span>
-                    </div>
-                    <div style="font-size:13px; color:#555; margin-top:4px;">
-                        🌾 Crop: <strong>${b.crop}</strong> (${b.quantityQtl} Qtl) | 🏛️ Mandi: ${b.mandi}
-                    </div>
-                </div>
-            `;
-        });
-    } catch (err) { console.error(err); }
-}
-
-async function submitBuyerBid(event) {
-    event.preventDefault();
-    const bidData = {
-        buyerName: document.getElementById("bidBuyerName").value,
-        crop: document.getElementById("bidCrop").value,
-        quantityQtl: document.getElementById("bidQty").value,
-        offeredPrice: document.getElementById("bidPrice").value,
-        mandi: document.getElementById("bidMandi").value
-    };
-
-    try {
-        const res = await fetch(`${API}/buyer-bids`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(bidData)
-        });
-        const result = await res.json();
-        if (res.ok) {
-            alert("🎉 e-Auction Bid Placed Successfully!");
-            document.getElementById("buyerBidForm").reset();
-            loadBuyerBids();
-        }
-    } catch (err) { alert("Bid submission error."); }
-}
-
-// =====================================
-// TOKEN STATUS & PAYMENT CARD RENDERER
-// =====================================
-
-function showToken(booking) {
-    document.getElementById("tokenDetails").innerHTML = `
-        <div class="token-card">
-            <div class="token-number">${booking.token}</div>
-            <div class="token-grid">
-                <div class="token-item"><span>Farmer</span><strong>${booking.farmer_name}</strong></div>
-                <div class="token-item"><span>Crop</span><strong>${booking.crop_name}</strong></div>
-                <div class="token-item"><span>Quantity</span><strong>${booking.quantity} Quintals</strong></div>
-                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
-                <div class="token-item"><span>Date</span><strong>${formatDate(booking.date)}</strong></div>
-                <div class="token-item"><span>Time Slot</span><strong>${booking.slot}</strong></div>
-            </div>
-        </div>`;
-    document.getElementById("tokenModal").classList.add("show");
-}
-
-function closeModal() { document.getElementById("tokenModal").classList.remove("show"); }
-
-async function searchToken() {
-    const token = document.getElementById("tokenSearch").value.trim().toUpperCase();
-    if (!token) return;
-    try {
-        const res = await fetch(`${API}/token/${token}`);
-        const result = await res.json();
-        if (!res.ok) {
-            document.getElementById("tokenResult").innerHTML = `<p style="color:#d9534f; margin-top:15px; font-weight:bold;">❌ Token not found.</p>`;
-            return;
-        }
-        renderTokenStatus(result.booking);
-    } catch (err) { console.error(err); }
-}
-
-function renderTokenStatus(booking) {
-    const statuses = ["Booked", "Gate Entry", "Quality Check", "Weighment", "J-Form Generated", "DBT Paid"];
-    const currentIndex = statuses.indexOf(booking.status);
-
-    const isPaid = booking.status === "DBT Paid" || (booking.dbt && booking.dbt.status === "Paid");
-    const dbtAmount = booking.dbt ? booking.dbt.amount : booking.estimated_amount;
-    const bankLast4 = booking.bank_last4 || "4821";
-
-    let html = `
-        <div class="token-card">
-            <div class="token-number">${booking.token}</div>
-
-            <div class="token-grid">
-                <div class="token-item"><span>Farmer Name</span><strong>${booking.farmer_name} (${booking.mobile})</strong></div>
-                <div class="token-item"><span>Aadhaar eKYC</span><strong>XXXX-XXXX-${(booking.aadhaar || '1234').slice(-4)} ✅</strong></div>
-                <div class="token-item"><span>Crop & Quantity</span><strong>${booking.crop_name} - ${booking.quantity} Qtl</strong></div>
-                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
-            </div>
-
-            <div class="payment-status-card ${isPaid ? 'paid' : 'pending'}">
-                <div class="payment-header">
-                    <span class="payment-icon">${isPaid ? '💳' : '⏳'}</span>
-                    <div>
-                        <h3>DBT Payment Status: <span class="status-title">${isPaid ? 'PAID / DISBURSED ✅' : 'PENDING ⏳'}</span></h3>
-                        <p>${isPaid ? 'MSP Payment successfully transferred to Aadhaar Bank A/c' : 'Payment will be released after Weighment & J-Form verification'}</p>
-                    </div>
-                </div>
-
-                <div class="payment-details-grid">
-                    <div>
-                        <span class="lbl">Amount ${isPaid ? 'Paid' : 'Estimated'}:</span>
-                        <strong class="val amount-green">${formatCurrency(dbtAmount)}</strong>
-                    </div>
-                    <div>
-                        <span class="lbl">Bank Account:</span>
-                        <strong class="val">Aadhaar Bank A/c (****${bankLast4})</strong>
-                    </div>
-                    <div>
-                        <span class="lbl">DBT Ref No:</span>
-                        <strong class="val">${isPaid ? (booking.dbt.ref_no || 'DBT-2026-984120') : 'Generated upon payment'}</strong>
-                    </div>
-                </div>
-            </div>
-
-            <h4 style="margin-top: 25px; color: #087f5b;">Procurement Stage Timeline:</h4>
-            <div class="timeline">
-    `;
-
-    statuses.forEach((status, idx) => {
-        const active = idx <= currentIndex;
-        html += `
-            <div class="timeline-item ${active ? "active" : ""}">
-                ${active ? "✅" : "⏳"} <strong>${status}</strong>
-                ${status === "DBT Paid" ? (isPaid ? ' — <span style="color:#2b8a3e; font-weight:bold;">Direct Benefit Transfer Completed</span>' : ' — Payment Pending') : ''}
-            </div>
-        `;
-    });
-
-    if (currentIndex >= 0 && currentIndex < statuses.length - 1) {
-        html += `
-            <div class="workflow-action">
-                <button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}', '${booking.token}')">
-                    ▶️ Advance Stage to: ${statuses[currentIndex + 1]}
-                </button>
-            </div>
-        `;
-    }
-
-    html += `</div></div>`;
-    document.getElementById("tokenResult").innerHTML = html;
-}
-
-async function advanceStatus(bookingId, nextStatus) {
-    try {
-        const res = await fetch(`${API}/bookings/${bookingId}/status`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: nextStatus })
-        });
-        const result = await res.json();
-        renderTokenStatus(result.booking);
-        loadDashboard();
-    } catch (err) { console.error(err); }
-}
-
-async function loadDashboard() {
-    try {
-        const res = await fetch(`${API}/dashboard`);
-        const data = await res.json();
-        document.getElementById("totalBookings").textContent = data.total_bookings;
-        document.getElementById("farmers").textContent = data.farmers_benefited;
-        document.getElementById("dbt").textContent = formatCurrency(data.dbt_disbursed);
-        document.getElementById("activeTokens").textContent = data.active_tokens;
-    } catch (err) { console.error(err); }
-}
-
-function calculateMSP() {
-    const cropId = document.getElementById("calcCrop").value;
-    const qty = Number(document.getElementById("calcQuantity").value);
-    const crop = crops.find(c => c.id === cropId);
-    if (!crop || !qty) { document.getElementById("calcAmount").textContent = "₹0"; return; }
-    document.getElementById("calcAmount").textContent = formatCurrency(crop.msp * qty);
-}
-
-function setupVoice() {
-    const btn = document.getElementById("voiceBtn");
-    if (!btn) return;
-    btn.addEventListener("click", () => {
-        if (!("speechSynthesis" in window)) return;
-        window.speechSynthesis.cancel();
-        const dict = LANGUAGES[currentLang] || LANGUAGES["hi"];
-        const utterance = new SpeechSynthesisUtterance(dict.speech_text || "KisanSetu Portal.");
-        utterance.lang = currentLang === "en" ? "en-IN" : "hi-IN";
-        window.speechSynthesis.speak(utterance);
-    });
-}
-
-function showSection(id) {
-    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-    const target = document.getElementById(id);
-    if (target) target.classList.add("active");
-    if (id === "dashboard") loadDashboard();
-    if (id === "buyer_portal") loadBuyerBids();
-}
-
-function formatCurrency(val) {
-    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
-}
-
-function formatDate(d) {
-    return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-}
+        if (!res.ok) { alert(result.message);
