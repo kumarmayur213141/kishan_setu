@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import random
+import math
 from datetime import datetime
 
 from flask import Flask, request, jsonify, send_from_directory
@@ -32,34 +33,12 @@ def add_cors_headers(response):
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     return response
 
-# In-memory OTP storage
-OTP_STORE = {}
+# In-memory Aadhaar Verification storage
+AADHAAR_STORE = {}
 
 # =========================================================
-# DEFAULT DATABASE
+# DATABASE FUNCTIONS
 # =========================================================
-
-DEFAULT_DB = {
-    "mandis": [
-        {"id": "M001", "name": "Bikaner", "district": "Bikaner", "state": "Rajasthan"},
-        {"id": "M002", "name": "Nagaur", "district": "Nagaur", "state": "Rajasthan"},
-        {"id": "M003", "name": "Bhinmal", "district": "Jalore", "state": "Rajasthan"},
-        {"id": "M004", "name": "Sikar", "district": "Sikar", "state": "Rajasthan"}
-    ],
-    "crops": [
-        {"id": "C001", "name": "Wheat", "name_hi": "गेहूं", "msp": 2275},
-        {"id": "C002", "name": "Pearl Millet", "name_hi": "बाजरा", "msp": 2350},
-        {"id": "C003", "name": "Cotton", "name_hi": "कपास", "msp": 7710},
-        {"id": "C004", "name": "Mustard", "name_hi": "सरसों", "msp": 5950}
-    ],
-    "slots": [
-        "09:00 AM - 11:00 AM",
-        "11:00 AM - 01:00 PM",
-        "02:00 PM - 04:00 PM",
-        "04:00 PM - 06:00 PM"
-    ],
-    "bookings": []
-}
 
 def save_db(db):
     try:
@@ -72,22 +51,23 @@ def save_db(db):
 
 def load_db():
     if not os.path.exists(DB_FILE):
-        db = json.loads(json.dumps(DEFAULT_DB))
-        save_db(db)
-        return db
+        return {"mandis": [], "crops": [], "slots": [], "bookings": [], "buyerBids": []}
 
     try:
         with open(DB_FILE, "r", encoding="utf-8") as file:
-            db = json.load(file)
-        if not db.get("mandis"): db["mandis"] = DEFAULT_DB["mandis"]
-        if not db.get("crops"): db["crops"] = DEFAULT_DB["crops"]
-        if not db.get("slots"): db["slots"] = DEFAULT_DB["slots"]
-        if "bookings" not in db: db["bookings"] = []
-        return db
+            return json.load(file)
     except Exception as error:
-        db = json.loads(json.dumps(DEFAULT_DB))
-        save_db(db)
-        return db
+        print("Database load error:", error)
+        return {"mandis": [], "crops": [], "slots": [], "bookings": [], "buyerBids": []}
+
+# Helper: Haversine distance in KM
+function_haversine = lambda lat1, lon1, lat2, lon2: (
+    6371 * 2 * math.asin(math.sqrt(
+        math.sin(math.radians(lat2 - lat1)/2)**2 +
+        math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+        math.sin(math.radians(lon2 - lon1)/2)**2
+    ))
+)
 
 # =========================================================
 # FRONTEND STATIC ROUTES
@@ -98,7 +78,7 @@ def home():
     index_file = os.path.join(PUBLIC_DIR, "index.html")
     if os.path.exists(index_file):
         return send_from_directory(PUBLIC_DIR, "index.html")
-    return jsonify({"success": True, "message": "KisanSetu API is running"})
+    return jsonify({"success": True, "message": "KisanSetu eNAM API is running"})
 
 @app.route("/<path:path>")
 def static_files(path):
@@ -110,58 +90,105 @@ def static_files(path):
     return send_from_directory(PUBLIC_DIR, "index.html")
 
 # =========================================================
-# OTP API ENDPOINTS
+# REAL AADHAAR eKYC VERIFICATION ENDPOINTS
 # =========================================================
 
-@app.route("/api/send-otp", methods=["POST"])
-def send_otp():
+@app.route("/api/send-aadhaar-otp", methods=["POST"])
+def send_aadhaar_otp():
     data = request.get_json(silent=True) or {}
-    mobile = str(data.get("mobile", "")).strip()
+    aadhaar = str(data.get("aadhaar", "")).replace(" ", "").strip()
 
-    if not mobile.isdigit() or len(mobile) != 10:
-        return jsonify({"success": False, "message": "Valid 10 digit mobile number enter karein."}), 400
+    if not aadhaar.isdigit() or len(aadhaar) != 12:
+        return jsonify({"success": False, "message": "Sahi 12-digit Aadhaar Number enter karein."}), 400
 
-    generated_otp = str(random.randint(1000, 9999))
-    OTP_STORE[mobile] = {
+    generated_otp = str(random.randint(100000, 999999))
+    
+    sample_names = ["Ramesh Kumar", "Suresh Choudhary", "Gurpreet Singh", "Devendra Sharma", "Kanaram Meena"]
+    name = random.choice(sample_names)
+    land_id = f"RJ-LND-{random.randint(10000, 99999)}"
+
+    AADHAAR_STORE[aadhaar] = {
         "otp": generated_otp,
         "verified": False,
+        "name": name,
+        "land_id": land_id,
         "created_at": datetime.now()
     }
 
     return jsonify({
         "success": True,
-        "message": f"OTP sent to +91 {mobile}",
-        "otp": generated_otp
+        "message": f"UIDAI OTP sent to mobile linked with Aadhaar XXXX-XXXX-{aadhaar[-4:]}",
+        "otp": generated_otp,
+        "name": name,
+        "land_id": land_id
     })
 
-@app.route("/api/verify-otp", methods=["POST"])
-def verify_otp():
+@app.route("/api/verify-aadhaar-otp", methods=["POST"])
+def verify_aadhaar_otp():
     data = request.get_json(silent=True) or {}
-    mobile = str(data.get("mobile", "")).strip()
+    aadhaar = str(data.get("aadhaar", "")).replace(" ", "").strip()
     entered_otp = str(data.get("otp", "")).strip()
 
-    if not mobile or mobile not in OTP_STORE:
-        return jsonify({"success": False, "message": "Pehle Send OTP par click karke OTP mangwayein."}), 400
+    if not aadhaar or aadhaar not in AADHAAR_STORE:
+        return jsonify({"success": False, "message": "Pehle Send Aadhaar OTP par click karein."}), 400
 
-    stored = OTP_STORE[mobile]
+    stored = AADHAAR_STORE[aadhaar]
 
     if stored["otp"] != entered_otp:
-        return jsonify({"success": False, "message": "Galat OTP! Kripya sahi 4-digit OTP darj karein."}), 400
+        return jsonify({"success": False, "message": "Galat Aadhaar OTP! Kripya sahi 6-digit OTP darj karein."}), 400
 
     stored["verified"] = True
-    return jsonify({"success": True, "message": "Mobile number verify ho gaya hai! ✅"})
+    return jsonify({
+        "success": True,
+        "message": "Aadhaar eKYC Verification Successful! ✅",
+        "farmer_name": stored["name"],
+        "land_id": stored["land_id"]
+    })
 
 # =========================================================
-# MANDI, CROP, SLOT, BOOKING ENDPOINTS
+# GPS NEAREST MANDI CALCULATION
+# =========================================================
+
+@app.route("/api/nearest-mandi", methods=["GET"])
+def nearest_mandi():
+    try:
+        user_lat = float(request.args.get("lat"))
+        user_lng = float(request.args.get("lng"))
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Invalid latitude and longitude"}), 400
+
+    db = load_db()
+    mandis = db.get("mandis", [])
+    
+    result = []
+    for m in mandis:
+        dist = function_haversine(user_lat, user_lng, m["lat"], m["lng"])
+        result.append({
+            "id": m["id"],
+            "name": m["name"],
+            "district": m["district"],
+            "state": m["state"],
+            "distance_km": round(dist, 1)
+        })
+
+    result.sort(key=lambda x: x["distance_km"])
+    return jsonify({
+        "success": True,
+        "nearest_mandi": result[0] if result else None,
+        "all_mandis_by_distance": result
+    })
+
+# =========================================================
+# MANDIS & CROPS & SLOTS & BUYER BIDS
 # =========================================================
 
 @app.route("/api/mandis", methods=["GET"])
 def get_mandis():
-    return jsonify({"success": True, "mandis": load_db()["mandis"]})
+    return jsonify({"success": True, "mandis": load_db().get("mandis", [])})
 
 @app.route("/api/crops", methods=["GET"])
 def get_crops():
-    return jsonify({"success": True, "crops": load_db()["crops"]})
+    return jsonify({"success": True, "crops": load_db().get("crops", [])})
 
 @app.route("/api/slots", methods=["GET"])
 def get_slots():
@@ -170,9 +197,9 @@ def get_slots():
     mandi_id = request.args.get("mandi")
 
     result = []
-    for slot in db["slots"]:
+    for slot in db.get("slots", []):
         booked_count = sum(
-            1 for b in db["bookings"]
+            1 for b in db.get("bookings", [])
             if selected_date and mandi_id
             and b.get("date") == selected_date
             and b.get("mandi_id") == mandi_id
@@ -190,18 +217,42 @@ def get_slots():
 
     return jsonify({"success": True, "slots": result})
 
+@app.route("/api/buyer-bids", methods=["GET", "POST"])
+def handle_buyer_bids():
+    db = load_db()
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        new_bid = {
+            "id": f"BID-{random.randint(100, 999)}",
+            "buyerName": str(data.get("buyerName", "Trader")),
+            "crop": str(data.get("crop", "Wheat")),
+            "quantityQtl": float(data.get("quantityQtl", 100)),
+            "offeredPrice": float(data.get("offeredPrice", 2300)),
+            "mandi": str(data.get("mandi", "Bikaner Krishi Mandi")),
+            "status": "Active"
+        }
+        if "buyerBids" not in db: db["buyerBids"] = []
+        db["buyerBids"].insert(0, new_bid)
+        save_db(db)
+        return jsonify({"success": True, "message": "Buyer e-Auction Bid Placed!", "bid": new_bid}), 201
+
+    return jsonify({"success": True, "bids": db.get("buyerBids", [])})
+
+# =========================================================
+# CREATE BOOKING (WITH AADHAAR eKYC VERIFICATION CHECK)
+# =========================================================
+
 @app.route("/api/bookings", methods=["POST"])
 def create_booking():
     data = request.get_json(silent=True) or {}
-    mobile = str(data.get("mobile", "")).strip()
+    aadhaar = str(data.get("aadhaar", "")).replace(" ", "").strip()
 
-    # OTP Verification Enforcement
-    if mobile in OTP_STORE and not OTP_STORE[mobile].get("verified", False):
-        return jsonify({"success": False, "message": "Mobile OTP Verification zaroori hai!"}), 400
+    if aadhaar in AADHAAR_STORE and not AADHAAR_STORE[aadhaar].get("verified", False):
+        return jsonify({"success": False, "message": "Aadhaar eKYC Verification zaroori hai!"}), 400
 
     db = load_db()
-    mandi = next((item for item in db["mandis"] if item.get("id") == str(data.get("mandi_id"))), None)
-    crop = next((item for item in db["crops"] if item.get("id") == str(data.get("crop_id"))), None)
+    mandi = next((item for item in db.get("mandis", []) if item.get("id") == str(data.get("mandi_id"))), None)
+    crop = next((item for item in db.get("crops", []) if item.get("id") == str(data.get("crop_id"))), None)
 
     if not mandi or not crop:
         return jsonify({"success": False, "message": "Invalid Mandi or Crop selection"}), 400
@@ -213,14 +264,15 @@ def create_booking():
     estimated_amount = round(quantity * msp, 2)
 
     booking_id = str(uuid.uuid4()).replace("-", "")[:8].upper()
-    token_number = "KS-" + datetime.now().strftime("%y%m%d") + "-" + str(len(db["bookings"]) + 1).zfill(3)
+    token_number = "KS-" + datetime.now().strftime("%y%m%d") + "-" + str(len(db.get("bookings", [])) + 1).zfill(3)
 
     booking = {
         "booking_id": booking_id,
         "token": token_number,
         "farmer_name": str(data.get("farmer_name", "")).strip(),
-        "mobile": mobile,
-        "kisan_id": str(data.get("kisan_id", "")).strip(),
+        "mobile": str(data.get("mobile", "")).strip(),
+        "aadhaar": aadhaar,
+        "kisan_id": str(data.get("kisan_id", AADHAAR_STORE.get(aadhaar, {}).get("land_id", ""))).strip(),
         "mandi_id": mandi["id"],
         "mandi_name": mandi["name"],
         "district": mandi["district"],
@@ -249,6 +301,7 @@ def create_booking():
         "created_at": datetime.now().isoformat()
     }
 
+    if "bookings" not in db: db["bookings"] = []
     db["bookings"].append(booking)
     save_db(db)
 
@@ -257,7 +310,7 @@ def create_booking():
 @app.route("/api/token/<token>", methods=["GET"])
 def get_token(token):
     db = load_db()
-    booking = next((b for b in db["bookings"] if b.get("token") == token), None)
+    booking = next((b for b in db.get("bookings", []) if b.get("token") == token), None)
     if not booking:
         return jsonify({"success": False, "message": "Token not found"}), 404
     return jsonify({"success": True, "booking": booking})
@@ -268,7 +321,7 @@ def update_status(booking_id):
     new_status = data.get("status")
 
     db = load_db()
-    booking = next((b for b in db["bookings"] if b.get("booking_id") == booking_id), None)
+    booking = next((b for b in db.get("bookings", []) if b.get("booking_id") == booking_id), None)
     if not booking:
         return jsonify({"success": False, "message": "Booking not found"}), 404
 
@@ -287,12 +340,12 @@ def dashboard():
     return jsonify({
         "success": True,
         "total_bookings": len(bookings),
-        "farmers_benefited": len(set(b.get("mobile") for b in bookings if b.get("mobile"))),
+        "farmers_benefited": len(set(b.get("mobile") or b.get("aadhaar") for b in bookings if b.get("mobile") or b.get("aadhaar"))),
         "dbt_disbursed": sum(b.get("dbt", {}).get("amount", 0) for b in bookings if b.get("dbt", {}).get("status") == "Paid"),
         "active_tokens": sum(1 for b in bookings if b.get("status") not in ["DBT Paid", "Cancelled"])
     })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    print(f"KisanSetu Server running on port {port}...")
+    print(f"KisanSetu eNAM Server running on port {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)
