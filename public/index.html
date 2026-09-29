@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KisanSetu - Integrated eNAM & Procurement Portal</title>
+    <title>KisanSetu - Farmers Procurement & Trading Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,8 +12,8 @@
     <div class="brand">
         <div class="logo">🌾</div>
         <div>
-            <h2 id="app_title">KisanSetu eNAM</h2>
-            <span id="app_subtitle">Integrated Farmer Procurement & Trading Portal</span>
+            <h2 id="app_title">KisanSetu</h2>
+            <span id="app_subtitle">Farmer Procurement & Mandi Digital Portal</span>
         </div>
     </div>
 
@@ -48,7 +48,7 @@
 <nav class="navbar">
     <button onclick="showSection('booking')" id="nav_booking">1. Slot Booking</button>
     <button onclick="showSection('status')" id="nav_status">2. Live Status & Payout</button>
-    <button onclick="showSection('buyer_portal')" id="nav_buyer">3. eNAM Buyer Portal</button>
+    <button onclick="showSection('buyer_portal')" id="nav_buyer">3. Buyer Portal</button>
     <button onclick="showSection('dashboard')" id="nav_dashboard">4. Mandi Dashboard</button>
     <button onclick="showSection('calculator')" id="nav_calculator">5. MSP Calculator</button>
 </nav>
@@ -207,15 +207,15 @@
 </div>
 </section>
 
-<!-- ================= SECTION 3: eNAM BUYER PORTAL ================= -->
+<!-- ================= SECTION 3: BUYER PORTAL ================= -->
 <section id="buyer_portal" class="section">
 <div class="card">
-    <h1>🏢 eNAM Buyer & Vyapari Portal</h1>
-    <p>Real-time crop arrivals, live mandi bidding, and e-Auction order placement.</p>
+    <h1>🏢 Vyapari & Buyer Portal</h1>
+    <p>Real-time crop arrivals, live mandi bidding, and order placement.</p>
 
     <div class="grid-2" style="margin-top:20px;">
         <div style="background:#f8f9fa; padding:20px; border-radius:12px; border:1px solid #ddd;">
-            <h3 style="color:#087f5b; margin-bottom:12px;">📈 Place e-Auction Bid (Vyapari Boli)</h3>
+            <h3 style="color:#087f5b; margin-bottom:12px;">📈 Place Crop Purchase Bid (Vyapari Boli)</h3>
             <form id="buyerBidForm" onsubmit="submitBuyerBid(event)">
                 <div class="field" style="margin-bottom:10px;">
                     <label>Trader / Company Name:</label>
@@ -242,7 +242,7 @@
         </div>
 
         <div>
-            <h3 style="color:#087f5b; margin-bottom:12px;">📊 Active Mandi Bids & e-Auctions</h3>
+            <h3 style="color:#087f5b; margin-bottom:12px;">📊 Active Mandi Bids & Crop Purchases</h3>
             <div id="buyerBidsContainer" class="bids-list"></div>
         </div>
     </div>
