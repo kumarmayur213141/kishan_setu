@@ -3,6 +3,7 @@ const API = "/api";
 let crops = [];
 let mandis = [];
 let isMobileVerified = false;
+let currentBookingToken = "";
 
 document.addEventListener("DOMContentLoaded", async () => {
     setMinimumDate();
@@ -21,7 +22,9 @@ function setMinimumDate() {
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
     input.min = `${year}-${month}-${day}`;
-    input.value = `${year}-${month}-${day}`;
+    if (!input.value) {
+        input.value = `${year}-${month}-${day}`;
+    }
 }
 
 // =====================================
@@ -29,15 +32,18 @@ function setMinimumDate() {
 // =====================================
 
 async function sendOTP() {
-    const mobile = document.getElementById("mobile").value.trim();
+    const mobileInput = document.getElementById("mobile");
+    const mobile = mobileInput.value.trim();
 
     if (!/^[0-9]{10}$/.test(mobile)) {
-        alert("Please enter a valid 10-digit mobile number.");
+        alert("Kripya sahi 10-digit mobile number enter karein.");
+        mobileInput.focus();
         return;
     }
 
     const sendBtn = document.getElementById("sendOtpBtn");
     sendBtn.disabled = true;
+    sendBtn.textContent = "⏳ Bhej rahe hain...";
 
     try {
         const response = await fetch(`${API}/send-otp`, {
@@ -51,17 +57,21 @@ async function sendOTP() {
         if (!response.ok || !result.success) {
             alert(result.message || "OTP bhejne me error aaya.");
             sendBtn.disabled = false;
+            sendBtn.textContent = "📲 OTP Bhejein";
             return;
         }
 
         document.getElementById("otpSection").style.display = "block";
+        document.getElementById("otp_input").value = result.otp || "";
         alert(`📩 ${result.message}\nDemo OTP: ${result.otp}`);
         sendBtn.textContent = "🔄 Resend OTP";
         sendBtn.disabled = false;
 
     } catch (error) {
-        alert("Server connection error.");
+        console.error(error);
+        alert("Server connection error. Kripya check karein server online hai ya nahi.");
         sendBtn.disabled = false;
+        sendBtn.textContent = "📲 OTP Bhejein";
     }
 }
 
@@ -76,6 +86,7 @@ async function verifyOTP() {
 
     const verifyBtn = document.getElementById("verifyOtpBtn");
     verifyBtn.disabled = true;
+    verifyBtn.textContent = "Checking...";
 
     try {
         const response = await fetch(`${API}/verify-otp`, {
@@ -89,6 +100,7 @@ async function verifyOTP() {
         if (!response.ok || !result.success) {
             alert(result.message || "OTP Verification Failed.");
             verifyBtn.disabled = false;
+            verifyBtn.textContent = "✅ Verify OTP";
             return;
         }
 
@@ -105,8 +117,10 @@ async function verifyOTP() {
         alert("🎉 Mobile Number Verification Successful!");
 
     } catch (error) {
-        alert("Server Error.");
+        console.error(error);
+        alert("Server Error in OTP verification.");
         verifyBtn.disabled = false;
+        verifyBtn.textContent = "✅ Verify OTP";
     }
 }
 
@@ -122,9 +136,11 @@ async function loadMandis() {
         const select = document.getElementById("mandi");
         select.innerHTML = `<option value="">Select Purchase Mandi</option>`;
         mandis.forEach(m => {
-            select.innerHTML += `<option value="${m.id}">${m.name} - ${m.district}</option>`;
+            select.innerHTML += `<option value="${m.id}">${m.name} (${m.district})</option>`;
         });
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error("loadMandis error:", err);
+    }
 }
 
 async function loadCrops() {
@@ -140,7 +156,9 @@ async function loadCrops() {
             select.innerHTML += `<option value="${c.id}">${c.name} (${c.name_hi})</option>`;
             calcSelect.innerHTML += `<option value="${c.id}">${c.name} - ₹${c.msp}/Qtl</option>`;
         });
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error("loadCrops error:", err);
+    }
 }
 
 function setupEvents() {
@@ -151,6 +169,13 @@ function setupEvents() {
     document.getElementById("calcCrop").addEventListener("change", calculateMSP);
     document.getElementById("calcQuantity").addEventListener("input", calculateMSP);
     document.getElementById("bookingForm").addEventListener("submit", submitBooking);
+
+    const tokenInput = document.getElementById("tokenSearch");
+    if (tokenInput) {
+        tokenInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") searchToken();
+        });
+    }
 }
 
 function calculateBookingAmount() {
@@ -158,7 +183,7 @@ function calculateBookingAmount() {
     const quantity = Number(document.getElementById("quantity").value);
     const crop = crops.find(c => c.id === cropId);
 
-    if (!crop || !quantity) {
+    if (!crop || !quantity || quantity <= 0) {
         document.getElementById("amount").textContent = "₹ 0";
         document.getElementById("mspText").textContent = "Select crop to calculate MSP";
         return;
@@ -179,16 +204,18 @@ async function loadSlots() {
     }
 
     try {
-        const res = await fetch(`${API}/slots?mandi=${mandi}&date=${date}`);
+        const res = await fetch(`${API}/slots?mandi=${encodeURIComponent(mandi)}&date=${encodeURIComponent(date)}`);
         const result = await res.json();
         const slots = result.slots || [];
         slotSelect.innerHTML = `<option value="">Select Time Slot</option>`;
         slots.forEach(item => {
             const disabled = !item.is_available ? "disabled" : "";
-            const text = !item.is_available ? `${item.slot} - FULL` : `${item.slot} - ${item.available} slots available`;
+            const text = !item.is_available ? `${item.slot} - FULL` : `${item.slot} (${item.available} slots left)`;
             slotSelect.innerHTML += `<option value="${item.slot}" ${disabled}>${text}</option>`;
         });
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error("loadSlots error:", err);
+    }
 }
 
 async function submitBooking(event) {
@@ -199,19 +226,23 @@ async function submitBooking(event) {
         return;
     }
 
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "⏳ Booking Confirmation...";
+
     const data = {
-        farmer_name: document.getElementById("farmer_name").value,
-        mobile: document.getElementById("mobile").value,
-        kisan_id: document.getElementById("kisan_id").value,
+        farmer_name: document.getElementById("farmer_name").value.trim(),
+        mobile: document.getElementById("mobile").value.trim(),
+        kisan_id: document.getElementById("kisan_id").value.trim(),
         mandi_id: document.getElementById("mandi").value,
         crop_id: document.getElementById("crop").value,
         quantity: document.getElementById("quantity").value,
-        village: document.getElementById("village").value,
+        village: document.getElementById("village").value.trim(),
         vehicle_type: document.getElementById("vehicle_type").value,
-        vehicle_number: document.getElementById("vehicle_number").value,
+        vehicle_number: document.getElementById("vehicle_number").value.trim(),
         date: document.getElementById("booking_date").value,
         slot: document.getElementById("slot").value,
-        bank_last4: document.getElementById("bank_last4").value
+        bank_last4: document.getElementById("bank_last4").value.trim() || "4821"
     };
 
     try {
@@ -221,7 +252,16 @@ async function submitBooking(event) {
             body: JSON.stringify(data)
         });
         const result = await res.json();
-        if (!res.ok) { alert(result.message); return; }
+        submitBtn.disabled = false;
+        submitBtn.textContent = "✅ Confirm Slot Booking & Generate Token";
+
+        if (!res.ok || !result.success) {
+            alert(result.message || "Booking failed.");
+            return;
+        }
+
+        currentBookingToken = result.booking.token;
+        document.getElementById("tokenSearch").value = result.booking.token;
 
         showToken(result.booking);
         document.getElementById("bookingForm").reset();
@@ -236,7 +276,12 @@ async function submitBooking(event) {
         setMinimumDate();
         calculateBookingAmount();
         loadDashboard();
-    } catch (err) { alert("Server Error"); }
+    } catch (err) {
+        console.error(err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "✅ Confirm Slot Booking & Generate Token";
+        alert("Server Error while creating booking.");
+    }
 }
 
 function showToken(booking) {
@@ -245,33 +290,52 @@ function showToken(booking) {
             <div class="token-number">${booking.token}</div>
             <div class="token-grid">
                 <div class="token-item"><span>Farmer</span><strong>${booking.farmer_name}</strong></div>
-                <div class="token-item"><span>Crop</span><strong>${booking.crop_name}</strong></div>
+                <div class="token-item"><span>Crop</span><strong>${booking.crop_name} (${booking.crop_name_hi})</strong></div>
                 <div class="token-item"><span>Quantity</span><strong>${booking.quantity} Quintals</strong></div>
                 <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
                 <div class="token-item"><span>Date</span><strong>${formatDate(booking.date)}</strong></div>
                 <div class="token-item"><span>Time Slot</span><strong>${booking.slot}</strong></div>
+                <div class="token-item"><span>Est. MSP Payment</span><strong style="color: #087f5b;">${formatCurrency(booking.estimated_amount)}</strong></div>
+                <div class="token-item"><span>Aadhaar A/c</span><strong>****${booking.bank_last4 || "4821"}</strong></div>
             </div>
         </div>`;
     document.getElementById("tokenModal").classList.add("show");
 }
 
-function closeModal() { document.getElementById("tokenModal").classList.remove("show"); }
+function closeModal() {
+    document.getElementById("tokenModal").classList.remove("show");
+}
+
+function viewCurrentTokenStatus() {
+    closeModal();
+    showSection('status');
+    if (currentBookingToken) {
+        document.getElementById("tokenSearch").value = currentBookingToken;
+        searchToken();
+    }
+}
 
 async function searchToken() {
     const token = document.getElementById("tokenSearch").value.trim().toUpperCase();
     if (!token) {
-        alert("Token number enter karein.");
+        alert("Token number enter karein (e.g. KS-260929-001).");
         return;
     }
+    const resultBox = document.getElementById("tokenResult");
+    resultBox.innerHTML = `<p style="color:#087f5b; margin-top:15px;">⏳ Searching token details...</p>`;
+
     try {
-        const res = await fetch(`${API}/token/${token}`);
+        const res = await fetch(`${API}/token/${encodeURIComponent(token)}`);
         const result = await res.json();
-        if (!res.ok) {
-            document.getElementById("tokenResult").innerHTML = `<p style="color:#d9534f; margin-top:15px; font-weight:bold;">❌ Token not found. Please check token number.</p>`;
+        if (!res.ok || !result.success) {
+            resultBox.innerHTML = `<p style="color:#d9534f; margin-top:15px; font-weight:bold;">❌ Token not found. Kripya token number sahi se check karein.</p>`;
             return;
         }
         renderTokenStatus(result.booking);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+        resultBox.innerHTML = `<p style="color:#d9534f; margin-top:15px;">❌ Connection error.</p>`;
+    }
 }
 
 // =====================================
@@ -285,6 +349,7 @@ function renderTokenStatus(booking) {
     const isPaid = booking.status === "DBT Paid" || (booking.dbt && booking.dbt.status === "Paid");
     const dbtAmount = booking.dbt ? booking.dbt.amount : booking.estimated_amount;
     const bankLast4 = booking.bank_last4 || "4821";
+    const refNo = (booking.dbt && booking.dbt.ref_no) ? booking.dbt.ref_no : "DBT-2026-984120";
 
     let html = `
         <div class="token-card">
@@ -293,7 +358,7 @@ function renderTokenStatus(booking) {
             <div class="token-grid">
                 <div class="token-item"><span>Farmer Name</span><strong>${booking.farmer_name} (${booking.mobile})</strong></div>
                 <div class="token-item"><span>Crop & Quantity</span><strong>${booking.crop_name} - ${booking.quantity} Qtl</strong></div>
-                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name}</strong></div>
+                <div class="token-item"><span>Mandi</span><strong>${booking.mandi_name} (${booking.district || ''})</strong></div>
                 <div class="token-item"><span>Slot Date</span><strong>${formatDate(booking.date)} (${booking.slot})</strong></div>
             </div>
 
@@ -318,7 +383,7 @@ function renderTokenStatus(booking) {
                     </div>
                     <div>
                         <span class="lbl">DBT Ref No:</span>
-                        <strong class="val">${isPaid ? (booking.dbt.ref_no || 'DBT-2026-984120') : 'Generated upon payment'}</strong>
+                        <strong class="val">${isPaid ? refNo : 'Generated upon payment'}</strong>
                     </div>
                 </div>
             </div>
@@ -341,7 +406,7 @@ function renderTokenStatus(booking) {
     if (currentIndex >= 0 && currentIndex < statuses.length - 1) {
         html += `
             <div class="workflow-action">
-                <button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}', '${booking.token}')">
+                <button class="primary-btn" onclick="advanceStatus('${booking.booking_id}', '${statuses[currentIndex + 1]}')">
                     ▶️ Advance Stage to: ${statuses[currentIndex + 1]}
                 </button>
                 <small>Demo Note: Click button to test next stage workflow (Quality → Weighment → J-Form → DBT Payout).</small>
@@ -349,8 +414,8 @@ function renderTokenStatus(booking) {
         `;
     } else if (isPaid) {
         html += `
-            <div class="workflow-complete">
-                🎉 <b>Procurement Workflow Complete!</b> ₹${dbtAmount.toLocaleString('en-IN')} Direct Benefit Transfer (DBT) has been credited.
+            <div class="workflow-complete" style="margin-top: 20px; padding: 16px; background: #eaf8f1; border-radius: 10px; color: #167344; font-weight: bold;">
+                🎉 Procurement Workflow Complete! ${formatCurrency(dbtAmount)} Direct Benefit Transfer (DBT) has been credited to Aadhaar linked account.
             </div>
         `;
     }
@@ -371,27 +436,37 @@ async function advanceStatus(bookingId, nextStatus) {
             body: JSON.stringify({ status: nextStatus })
         });
         const result = await res.json();
-        renderTokenStatus(result.booking);
-        loadDashboard();
-    } catch (err) { console.error(err); }
+        if (result.booking) {
+            renderTokenStatus(result.booking);
+            loadDashboard();
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error updating status.");
+    }
 }
 
 async function loadDashboard() {
     try {
         const res = await fetch(`${API}/dashboard`);
         const data = await res.json();
-        document.getElementById("totalBookings").textContent = data.total_bookings;
-        document.getElementById("farmers").textContent = data.farmers_benefited;
-        document.getElementById("dbt").textContent = formatCurrency(data.dbt_disbursed);
-        document.getElementById("activeTokens").textContent = data.active_tokens;
-    } catch (err) { console.error(err); }
+        document.getElementById("totalBookings").textContent = data.total_bookings || 0;
+        document.getElementById("farmers").textContent = data.farmers_benefited || 0;
+        document.getElementById("dbt").textContent = formatCurrency(data.dbt_disbursed || 0);
+        document.getElementById("activeTokens").textContent = data.active_tokens || 0;
+    } catch (err) {
+        console.error("loadDashboard error:", err);
+    }
 }
 
 function calculateMSP() {
     const cropId = document.getElementById("calcCrop").value;
     const qty = Number(document.getElementById("calcQuantity").value);
     const crop = crops.find(c => c.id === cropId);
-    if (!crop || !qty) { document.getElementById("calcAmount").textContent = "₹0"; return; }
+    if (!crop || !qty || qty <= 0) {
+        document.getElementById("calcAmount").textContent = "₹0";
+        return;
+    }
     document.getElementById("calcAmount").textContent = formatCurrency(crop.msp * qty);
 }
 
@@ -399,24 +474,40 @@ function setupVoice() {
     const btn = document.getElementById("voiceBtn");
     if (!btn) return;
     btn.addEventListener("click", () => {
-        if (!("speechSynthesis" in window)) return;
+        if (!("speechSynthesis" in window)) {
+            alert("Aapke browser me voice playback support nahi hai.");
+            return;
+        }
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance("KisanSetu Portal. Apni fasal mandi me bechne ke liye slot book karein.");
+        const utterance = new SpeechSynthesisUtterance("किसान सेतु पोर्टल। अपनी फसल मंडी में बेचने के लिए लाइव स्लॉट बुक करें और डिजिटल टोकन प्राप्त करें।");
         utterance.lang = "hi-IN";
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     });
 }
 
 function showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    const targetSection = document.getElementById(id);
+    if (targetSection) targetSection.classList.add("active");
+
+    document.querySelectorAll(".navbar button").forEach(btn => {
+        if (btn.getAttribute("data-section") === id) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+
     if (id === "dashboard") loadDashboard();
 }
 
 function formatCurrency(val) {
-    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val || 0);
 }
 
 function formatDate(d) {
-    return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    if (!d) return "N/A";
+    const dateObj = new Date(d.includes("T") ? d : d + "T00:00:00");
+    return isNaN(dateObj.getTime()) ? d : dateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
